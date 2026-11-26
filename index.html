@@ -636,14 +636,14 @@
 
       <div class="space-y-3 pt-1">
         <div>
-          <label class="block text-[10.5px] font-bold text-slate-600 uppercase mb-1">Qui êtes-vous ? (Prénom &amp; Nom)</label>
-          <input id="visitor-name-input" type="text" placeholder="Ex: Tante Claire, Cousin Marc..." onkeydown="if(event.key==='Enter') confirmVisitorIdentity()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-orange-500 outline-none font-semibold text-sm text-slate-900" />
+          <label class="block text-[10.5px] font-bold text-slate-600 uppercase mb-1">Qui êtes-vous ? (Sélectionnez votre fiche pour adapter les liens de parenté)</label>
+          <select id="visitor-person-select" onchange="handleVisitorSelectChange(this.value)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-orange-500 outline-none bg-white text-xs sm:text-sm font-semibold text-slate-800">
+            <option value="">-- Choisissez votre nom dans l’arbre --</option>
+          </select>
         </div>
         <div>
-          <label class="block text-[10.5px] font-bold text-slate-600 uppercase mb-1">Ou choisissez votre fiche dans l’arbre (optionnel)</label>
-          <select id="visitor-person-select" onchange="if(this.value) document.getElementById('visitor-name-input').value = this.options[this.selectedIndex].text" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-medium text-slate-700">
-            <option value="">-- Sélectionner votre nom dans la liste --</option>
-          </select>
+          <label class="block text-[10.5px] font-bold text-slate-600 uppercase mb-1">Votre prénom / nom affiché (si absent de la liste ou pour vos suggestions)</label>
+          <input id="visitor-name-input" type="text" placeholder="Ex: Tante Claire, Cousin Marc..." onkeydown="if(event.key==='Enter') confirmVisitorIdentity()" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:border-orange-500 outline-none font-medium text-xs text-slate-900 bg-slate-50" />
         </div>
       </div>
 
@@ -1168,29 +1168,69 @@ function applyReadOnlyUI() {
 
 function checkVisitorWelcomePrompt() {
   if (!isReadOnlyMode) return;
-  const storageKey = `heritree_visitor_name_${ensureSyncId()}`;
+  const syncId = ensureSyncId();
+  const storageKey = `heritree_visitor_name_${syncId}`;
+  const personKey = `heritree_visitor_pid_${syncId}`;
   let existing = '';
+  let existingPid = '';
   try {
     existing = localStorage.getItem(storageKey) || localStorage.getItem('heritree_sug_author') || '';
+    existingPid = localStorage.getItem(personKey) || '';
   } catch (e) {}
-  if (existing.trim()) return;
+
+  if (existingPid && IND()[existingPid]) {
+    treeData.rootId = existingPid;
+    treeData.radialRootId = existingPid;
+    relCache.clear();
+    renderTree();
+  }
+
+  if (existing.trim() || (existingPid && IND()[existingPid])) return;
 
   const sel = document.getElementById('visitor-person-select');
   if (sel) {
-    const list = Object.values(IND()).sort((a, b) => fullName(a).localeCompare(fullName(b)));
-    sel.innerHTML = `<option value="">-- Sélectionner votre nom dans la liste --</option>` +
-      list.map(p => `<option value="${ea(p.id)}">${escapeHtml(fullName(p))}</option>`).join('');
+    const list = Object.values(IND()).sort((a, b) => fullName(a).localeCompare(fullName(b), 'fr'));
+    sel.innerHTML = `<option value="">-- Choisissez votre nom dans l’arbre --</option>` +
+      list.map(p => `<option value="${ea(p.id)}">${escapeHtml(fullName(p))}${p.birt?.date ? ` (${escapeHtml(extractYearDisplay(p.birt.date))})` : ''}</option>`).join('') +
+      `<option value="__OTHER__">👤 Je ne suis pas encore dans l’arbre</option>`;
   }
   document.getElementById('visitor-welcome-modal')?.classList.remove('hidden');
-  setTimeout(() => document.getElementById('visitor-name-input')?.focus(), 80);
+  setTimeout(() => document.getElementById('visitor-person-select')?.focus(), 80);
+}
+
+function handleVisitorSelectChange(val) {
+  const input = document.getElementById('visitor-name-input');
+  if (!input) return;
+  if (val && val !== '__OTHER__' && IND()[val]) {
+    input.value = fullName(IND()[val]);
+  } else if (val === '__OTHER__') {
+    input.value = '';
+    input.focus();
+  }
 }
 
 function confirmVisitorIdentity() {
+  const sel = document.getElementById('visitor-person-select');
   const input = document.getElementById('visitor-name-input');
-  const val = (input?.value || '').trim();
+  const selectedPid = sel?.value || '';
+  let val = (input?.value || '').trim();
+
+  if (selectedPid && selectedPid !== '__OTHER__' && IND()[selectedPid]) {
+    if (!val) val = fullName(IND()[selectedPid]);
+    treeData.rootId = selectedPid;
+    treeData.radialRootId = selectedPid;
+    relCache.clear();
+    try {
+      localStorage.setItem(`heritree_visitor_pid_${ensureSyncId()}`, selectedPid);
+    } catch (e) {}
+    renderTree({ force: true });
+    fitView();
+    if (selectedPersonId) selectPerson(selectedPersonId);
+  }
+
   if (!val) {
-    showToast('Veuillez indiquer votre prénom ou votre nom pour continuer.');
-    input?.focus();
+    showToast('Veuillez sélectionner votre fiche ou indiquer votre nom.');
+    (sel && !sel.value ? sel : input)?.focus();
     return;
   }
   try {
@@ -1198,7 +1238,7 @@ function confirmVisitorIdentity() {
     localStorage.setItem('heritree_sug_author', val);
   } catch (e) {}
   document.getElementById('visitor-welcome-modal')?.classList.add('hidden');
-  showToast(`Bienvenue ${val} !`);
+  showToast(`Bienvenue ${val} ! Les liens de parenté sont adaptés à vous.`);
 }
 
 function saveTreeToStorage() {
@@ -2229,6 +2269,19 @@ function normalizeTree() {
 
   Object.entries(treeData.individuals).forEach(([id, p]) => {
     p.id = id;
+    let rawGiven = String(p.given || '').replace(/\//g, ' ').replace(/\s+/g, ' ').trim();
+    let rawSurname = String(p.surname || '').replace(/\//g, ' ').replace(/\s+/g, ' ').trim();
+    if (!rawSurname && p.name) {
+      const nm = String(p.name).match(/^(.*?)\s*\/([^/]*)\//);
+      if (nm) {
+        rawGiven = rawGiven || nm[1].trim();
+        rawSurname = nm[2].trim();
+      } else if (!rawGiven) {
+        rawGiven = String(p.name).replace(/\//g, ' ').trim();
+      }
+    }
+    p.given = rawGiven;
+    p.surname = rawSurname;
     if (!p.birt) p.birt = { date: '', place: '' };
     if (!p.deat) p.deat = { status: false, date: '', place: '', cause: '' };
     if (!Array.isArray(p.fams)) p.fams = [];
@@ -2283,22 +2336,29 @@ function rebuildLinks() {
 // ============================================================================
 // UTILITAIRES GÉNÉALOGIQUES, PARENTÉ & GESTION DES PROCHES
 // ============================================================================
+function cleanNamePart(str) {
+  return String(str || '').replace(/\//g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 function fullName(p) {
   if (!p) return 'Inconnu';
-  const g = (p.given || '').trim();
-  const s = (p.surname || '').trim().toUpperCase();
+  const g = cleanNamePart(p.given);
+  const s = cleanNamePart(p.surname).toLocaleUpperCase('fr-FR');
+  if (g && s && g.toLocaleUpperCase('fr-FR') === s) return g;
   return [g, s].filter(Boolean).join(' ') || 'Sans nom';
 }
 
 function dispSurname(p) {
-  return (p?.surname || '').trim().toUpperCase();
+  return cleanNamePart(p?.surname).toLocaleUpperCase('fr-FR');
 }
 
 function getInitials(p) {
   if (!p) return '?';
-  const g = (p.given || '').trim()[0] || '';
-  const s = (p.surname || '').trim()[0] || '';
-  return (g + s).toUpperCase() || '?';
+  const g = cleanNamePart(p.given);
+  const s = cleanNamePart(p.surname);
+  const c1 = Array.from(g)[0] || '';
+  const c2 = Array.from(s)[0] || '';
+  return (c1 + c2).toLocaleUpperCase('fr-FR') || '?';
 }
 
 function extractYearDisplay(dateStr) {
