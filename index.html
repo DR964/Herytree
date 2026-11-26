@@ -350,8 +350,8 @@
   </main>
 
   <!-- MODALE FICHE COMPLÈTE (LECTURE & ÉDITION) -->
-  <div id="fiche-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="if(event.target===this) closeFullFiche()">
-    <div class="bg-white w-full max-w-5xl h-[94dvh] sm:h-auto sm:max-h-[92vh] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden">
+  <div id="fiche-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onmousedown="modalOverlayDownTarget=event.target" onclick="if(event.target===this && modalOverlayDownTarget===this) closeFullFiche()">
+    <div class="bg-white w-full max-w-5xl h-[94dvh] sm:h-auto sm:max-h-[92vh] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden select-text">
       <div class="px-4 sm:px-6 py-3.5 bg-gradient-to-r from-slate-50 to-orange-50/40 border-b border-slate-200 flex items-center justify-between gap-2 shrink-0">
         <div class="flex items-center gap-3 min-w-0">
           <div id="modal-avatar" class="w-12 h-12 rounded-2xl bg-orange-100 text-orange-700 flex items-center justify-center font-extrabold text-base shrink-0 overflow-hidden">?</div>
@@ -375,8 +375,8 @@
   </div>
 
   <!-- MODALE PROPOSITION DE MODIFICATIONS (MODE LECTURE SEULE / FAMILLE) -->
-  <div id="suggest-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[62] flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="if(event.target===this) closeSuggestModal()">
-    <div class="bg-white w-full max-w-xl max-h-[92dvh] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden text-xs">
+  <div id="suggest-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[62] flex items-end sm:items-center justify-center p-0 sm:p-4" onmousedown="modalOverlayDownTarget=event.target" onclick="if(event.target===this && modalOverlayDownTarget===this) closeSuggestModal()">
+    <div class="bg-white w-full max-w-xl max-h-[92dvh] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden text-xs select-text">
       <div class="px-5 py-3.5 bg-amber-50 border-b border-amber-200 flex items-center justify-between">
         <div>
           <h3 class="text-sm sm:text-base font-extrabold text-amber-950">💡 Suggérer des modifications</h3>
@@ -390,7 +390,7 @@
           <input id="sug-author" type="text" placeholder="Ex: Tante Claire, Cousin Marc..." class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium" />
         </div>
 
-        <p class="text-[11px] text-slate-500">Modifiez uniquement les champs à corriger ou compléter. Chaque champ modifié sera envoyé séparément pour validation :</p>
+        <p class="text-[11px] text-slate-500">Modifiez les champs ou ajoutez une photo portrait / pièce justificative. Chaque élément sera envoyé pour validation :</p>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
@@ -429,6 +429,26 @@
           <textarea id="sug-note" rows="3" class="w-full px-3 py-2 rounded-xl border border-slate-200"></textarea>
         </div>
 
+        <!-- Ajout de photo portrait et pièces justificatives par la famille -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-amber-50/70 p-3 rounded-2xl border border-amber-200">
+          <div>
+            <label class="block text-[10.5px] font-bold text-amber-900 mb-1">📷 Proposer une photo portrait</label>
+            <label class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-amber-100 border border-amber-300 text-amber-900 font-semibold cursor-pointer">
+              <span>Choisir une photo</span>
+              <input type="file" accept="image/*" onchange="handleSuggestPortraitUpload(event)" class="hidden" />
+            </label>
+            <div id="sug-portrait-preview" class="mt-1.5 text-[10.5px] text-emerald-700 font-semibold"></div>
+          </div>
+          <div>
+            <label class="block text-[10.5px] font-bold text-amber-900 mb-1">📜 Ajouter une preuve / acte / photo</label>
+            <label class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-amber-100 border border-amber-300 text-amber-900 font-semibold cursor-pointer">
+              <span>Choisir fichier(s)</span>
+              <input type="file" accept="image/*" multiple onchange="handleSuggestDocsUpload(event)" class="hidden" />
+            </label>
+            <div id="sug-docs-preview" class="mt-1.5 text-[10.5px] text-emerald-700 font-semibold"></div>
+          </div>
+        </div>
+
         <div>
           <label class="block text-[10.5px] font-semibold text-slate-500 mb-1">💬 Précision ou source (facultatif)</label>
           <input id="sug-comment" type="text" placeholder="Ex: Vu sur le livret de famille..." class="w-full px-3 py-2 rounded-xl border border-slate-200" />
@@ -442,12 +462,12 @@
   </div>
 
   <!-- MODALE NOTIFICATIONS & VALIDATION DES SUGGESTIONS (PROPRIÉTAIRE) -->
-  <div id="suggestions-review-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[64] flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="if(event.target===this) closeSuggestionsReviewModal()">
-    <div class="bg-white w-full max-w-2xl max-h-[90dvh] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden text-xs">
+  <div id="suggestions-review-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[64] flex items-end sm:items-center justify-center p-0 sm:p-4" onmousedown="modalOverlayDownTarget=event.target" onclick="if(event.target===this && modalOverlayDownTarget===this) closeSuggestionsReviewModal()">
+    <div class="bg-white w-full max-w-2xl max-h-[90dvh] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden text-xs select-text">
       <div class="px-5 py-3.5 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-200 flex items-center justify-between">
         <div>
           <h3 class="text-sm sm:text-base font-extrabold text-slate-900">🔔 Suggestions reçues de la famille</h3>
-          <p class="text-[11px] text-slate-600">Acceptez ou refusez chaque modification proposée individuellement.</p>
+          <p class="text-[11px] text-slate-600">Acceptez ou refusez chaque modification ou pièce proposée individuellement.</p>
         </div>
         <button onclick="closeSuggestionsReviewModal()" class="w-8 h-8 rounded-xl bg-white hover:bg-slate-100 text-slate-600 font-bold">✕</button>
       </div>
@@ -455,15 +475,23 @@
     </div>
   </div>
 
-  <!-- MODALE APERÇU DOCUMENT / ACTE / VIDÉO -->
-  <div id="doc-preview-modal" class="hidden fixed inset-0 bg-slate-900/80 z-[60] flex items-center justify-center p-4" onclick="if(event.target===this) closeDocPreview()">
-    <div class="bg-white max-w-3xl w-full max-h-[90vh] rounded-2xl overflow-hidden shadow-2xl flex flex-col">
-      <div class="px-4 py-3 bg-slate-900 text-white flex items-center justify-between gap-2">
+  <!-- MODALE APERÇU DOCUMENT / ACTE / VIDÉO AVEC ZOOM -->
+  <div id="doc-preview-modal" class="hidden fixed inset-0 bg-slate-900/85 z-[60] flex items-center justify-center p-2 sm:p-4" onmousedown="modalOverlayDownTarget=event.target" onclick="if(event.target===this && modalOverlayDownTarget===this) closeDocPreview()">
+    <div class="bg-white max-w-4xl w-full h-[88dvh] rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+      <div class="px-4 py-2.5 bg-slate-900 text-white flex items-center justify-between gap-2 shrink-0">
         <div id="doc-preview-title" class="text-xs sm:text-sm font-bold truncate">Document</div>
-        <button onclick="closeDocPreview()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-sm flex items-center justify-center">✕</button>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <div id="doc-zoom-controls" class="flex items-center gap-1 bg-white/10 rounded-xl px-1.5 py-1">
+            <button onclick="zoomDocPreview(0.8)" title="Dézoomer" class="w-7 h-7 rounded-lg hover:bg-white/20 font-bold text-sm">−</button>
+            <span id="doc-zoom-label" class="text-[11px] font-bold w-11 text-center">100%</span>
+            <button onclick="zoomDocPreview(1.25)" title="Zoomer" class="w-7 h-7 rounded-lg hover:bg-white/20 font-bold text-sm">+</button>
+            <button onclick="resetDocPreviewZoom()" title="Taille initiale" class="px-2 h-7 rounded-lg hover:bg-white/20 text-[11px] font-semibold">1:1</button>
+          </div>
+          <button onclick="closeDocPreview()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-sm flex items-center justify-center">✕</button>
+        </div>
       </div>
-      <div id="doc-preview-container" class="p-4 overflow-auto flex-1 flex items-center justify-center bg-slate-100">
-        <img id="doc-preview-img" src="" alt="Aperçu acte" class="max-w-full max-h-[75vh] object-contain rounded-xl shadow" />
+      <div id="doc-preview-container" class="relative overflow-hidden flex-1 flex items-center justify-center bg-slate-950 select-none">
+        <img id="doc-preview-img" src="" alt="Aperçu acte" class="max-w-full max-h-full object-contain rounded-lg shadow transition-transform duration-75" />
       </div>
     </div>
   </div>
@@ -481,8 +509,8 @@
   </div>
 
   <!-- MODALE PARTAGE & SYNCHRONISATION MULTI-APPAREILS -->
-  <div id="share-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-[65] flex items-center justify-center p-4" onclick="if(event.target===this) closeShareModal()">
-    <div class="bg-white max-w-lg w-full rounded-3xl p-5 sm:p-6 shadow-2xl border border-slate-200 space-y-4 text-xs">
+  <div id="share-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-[65] flex items-center justify-center p-4" onmousedown="modalOverlayDownTarget=event.target" onclick="if(event.target===this && modalOverlayDownTarget===this) closeShareModal()">
+    <div class="bg-white max-w-lg w-full rounded-3xl p-5 sm:p-6 shadow-2xl border border-slate-200 space-y-4 text-xs select-text">
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-base font-extrabold text-slate-900">☁️ Synchronisation &amp; Partage Famille</h3>
@@ -953,30 +981,17 @@ let cam = { x: 0, y: 0, scale: 0.92 };
 let isDragging = false;
 let dragStart = { x: 0, y: 0 };
 let confirmCallback = null;
+let modalOverlayDownTarget = null;
 
-// Mode lecture seule (famille) & identifiant de synchronisation multi-appareils
-const urlParams = new URLSearchParams(window.location.search);
-const sharedReadOnlyId = urlParams.get('share') || '';
-const editSyncId = urlParams.get('edit') || '';
-const isReadOnlyMode = Boolean(sharedReadOnlyId);
-let activeSyncId = sharedReadOnlyId || editSyncId || '';
-let lastRemoteTimestamp = 0;
+// Mode lecture seule, synchronisation nuage & suggestions
+let isReadOnlyMode = false;
+let currentSyncId = '';
+let remoteSuggestions = [];
+let isApplyingRemote = false;
 
-function ensureSyncId() {
-  if (activeSyncId) return activeSyncId;
-  let stored = '';
-  try { stored = localStorage.getItem('heritree_sync_id') || ''; } catch (e) {}
-  if (!stored) {
-    stored = 'ht_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
-    try { localStorage.setItem('heritree_sync_id', stored); } catch (e) {}
-  }
-  activeSyncId = stored;
-  return activeSyncId;
-}
-
-const IND = () => treeData.individuals;
-const FAM = () => treeData.families;
-const P = () => (fichePersonId ? IND()[fichePersonId] : null);
+const IND = () => treeData.individuals || {};
+const FAM = () => treeData.families || {};
+const P = () => IND()[fichePersonId] || null;
 
 function escapeHtml(str) {
   return String(str ?? '')
@@ -988,466 +1003,191 @@ function escapeHtml(str) {
 }
 const ea = escapeHtml;
 
-let toastTimer = null;
-function showToast(msg) {
-  const el = document.getElementById('toast-box');
-  if (!el) return;
-  el.textContent = msg;
-  el.classList.remove('hidden');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.add('hidden'), 2800);
-}
-
-function flashSaveBadge() {
-  const el = document.getElementById('save-indicator');
-  if (!el) return;
-  el.textContent = '✓ Enregistré';
+function showToast(msg, duration = 2600) {
+  const box = document.getElementById('toast-box');
+  if (!box) return;
+  box.textContent = msg;
+  box.classList.remove('hidden');
+  clearTimeout(box._timer);
+  box._timer = setTimeout(() => box.classList.add('hidden'), duration);
 }
 
 function askConfirm(title, msg) {
   return new Promise((resolve) => {
-    const modal = document.getElementById('confirm-modal');
-    if (!modal) return resolve(true);
-    document.getElementById('confirm-title').textContent = title;
-    document.getElementById('confirm-msg').textContent = msg;
-    confirmCallback = resolve;
-    modal.classList.remove('hidden');
+    document.getElementById('confirm-title').textContent = title || 'Confirmation';
+    document.getElementById('confirm-msg').textContent = msg || '';
+    document.getElementById('confirm-modal').classList.remove('hidden');
+    confirmCallback = (ans) => {
+      document.getElementById('confirm-modal').classList.add('hidden');
+      confirmCallback = null;
+      resolve(ans);
+    };
   });
 }
 
-function resolveConfirm(val) {
-  document.getElementById('confirm-modal')?.classList.add('hidden');
-  if (confirmCallback) {
-    const cb = confirmCallback;
-    confirmCallback = null;
-    cb(val);
-  }
+function resolveConfirm(ans) {
+  if (confirmCallback) confirmCallback(ans);
 }
 
 // ============================================================================
-// MOTEUR RÉSEAU (COUPLE-CENTRÉ, CENTRAGE FRATRIES & OPTIMISATION SANS CROISEMENT)
+// STOCKAGE LOCAL & SYNCHRONISATION NUAGE FIREBASE
 // ============================================================================
-window.HeriTreeNetwork = (function () {
-  const LV0 = 58;
-  const LVSTEP = 14;
-
-  function networkLayout(data, rootId, opts = {}) {
-    const persons = data.persons || {};
-    const families = data.families || {};
-    const allIds = Object.keys(persons);
-    if (!allIds.length) return { nodes: [], links: [], flips: {} };
-
-    const startId = persons[rootId] ? rootId : allIds[0];
-    const gapCouple = opts.gapCouple ?? 26;
-    const gapSib = opts.gapSib ?? 56;
-    const gapBranch = opts.gapBranch ?? 96;
-    const rowH = opts.rowH ?? 215;
-    const wOf = opts.widthOf || (() => 172);
-    const manualCouple = opts.manualCouple || {};
-
-    // 1. Attribution des générations par BFS connecté
-    const gen = {};
-    const visited = new Set([startId]);
-    gen[startId] = 0;
-    const queue = [startId];
-
-    while (queue.length) {
-      const uid = queue.shift();
-      const u = persons[uid];
-      const g = gen[uid];
-
-      if (u.famc && families[u.famc]) {
-        const pf = families[u.famc];
-        [pf.husb, pf.wife].forEach(pid => {
-          if (pid && persons[pid] && !visited.has(pid)) {
-            visited.add(pid);
-            gen[pid] = g - 1;
-            queue.push(pid);
-          }
-        });
-        (pf.kids || []).forEach(sid => {
-          if (sid && persons[sid] && !visited.has(sid)) {
-            visited.add(sid);
-            gen[sid] = g;
-            queue.push(sid);
-          }
-        });
-      }
-
-      (u.fams || []).forEach(fid => {
-        const fam = families[fid];
-        if (!fam) return;
-        const sp = fam.husb === uid ? fam.wife : fam.husb;
-        if (sp && persons[sp] && !visited.has(sp)) {
-          visited.add(sp);
-          gen[sp] = g;
-          queue.push(sp);
-        }
-        (fam.kids || []).forEach(cid => {
-          if (cid && persons[cid] && !visited.has(cid)) {
-            visited.add(cid);
-            gen[cid] = g + 1;
-            queue.push(cid);
-          }
-        });
-      });
+function ensureSyncId() {
+  if (currentSyncId) return currentSyncId;
+  const params = new URLSearchParams(window.location.search);
+  const shareParam = params.get('share');
+  const editParam = params.get('edit');
+  if (shareParam) {
+    isReadOnlyMode = true;
+    currentSyncId = shareParam;
+  } else if (editParam) {
+    isReadOnlyMode = false;
+    currentSyncId = editParam;
+  } else {
+    try {
+      currentSyncId = localStorage.getItem('heritree_sync_id') || '';
+    } catch (e) {}
+    if (!currentSyncId) {
+      currentSyncId = 'TREE_' + Math.random().toString(36).slice(2, 10).toUpperCase();
     }
-
-    // Rattaché au même arbre si composante secondaire
-    allIds.forEach(id => {
-      if (gen[id] === undefined) gen[id] = 0;
-    });
-
-    // 2. Orientation des couples (flips)
-    const flips = Object.assign({}, opts.flips || {});
-    Object.entries(families).forEach(([fid, f]) => {
-      if (manualCouple[fid] !== undefined) {
-        flips[fid] = Boolean(manualCouple[fid]);
-      } else if (flips[fid] === undefined) {
-        flips[fid] = false;
-      }
-    });
-
-    // 3. Regroupement par génération et placement avec conjoint sans ascendance au centre de la fratrie
-    const rowsMap = new Map();
-    allIds.forEach(id => {
-      const g = gen[id];
-      if (!rowsMap.has(g)) rowsMap.set(g, []);
-      rowsMap.get(g).push(id);
-    });
-
-    const sortedGens = Array.from(rowsMap.keys()).sort((a, b) => a - b);
-    const xPos = {};
-
-    sortedGens.forEach(g => {
-      const rowIds = rowsMap.get(g);
-      const placedInRow = new Set();
-      const blocks = [];
-
-      // Construit les blocs (couples ou célibataires)
-      rowIds.forEach(id => {
-        if (placedInRow.has(id)) return;
-        const p = persons[id];
-        const famsSameGen = (p.fams || []).filter(fid => {
-          const f = families[fid];
-          if (!f) return false;
-          const sp = f.husb === id ? f.wife : f.husb;
-          return sp && persons[sp] && gen[sp] === g && !placedInRow.has(sp);
-        });
-
-        if (famsSameGen.length) {
-          const fid = famsSameGen[0];
-          const f = families[fid];
-          const sp = f.husb === id ? f.wife : f.husb;
-          const left = flips[fid] ? (f.wife || sp) : (f.husb || id);
-          const right = left === f.husb ? f.wife : f.husb;
-          const members = [left, right].filter(Boolean);
-          members.forEach(m => placedInRow.add(m));
-          const hasAncLeft = Boolean(persons[left]?.famc);
-          const hasAncRight = Boolean(persons[right]?.famc);
-          blocks.push({
-            members,
-            famc: persons[left]?.famc || persons[right]?.famc || '',
-            spNoAnc: (hasAncLeft && !hasAncRight) || (hasAncRight && !hasAncLeft),
-            hasBothAnc: hasAncLeft && hasAncRight
-          });
-        } else {
-          placedInRow.add(id);
-          blocks.push({
-            members: [id],
-            famc: p.famc || '',
-            spNoAnc: false,
-            hasBothAnc: false
-          });
-        }
-      });
-
-      // Réorganise chaque fratrie pour mettre les couples dont le conjoint n'a pas d'ascendance au milieu
-      const byFamc = new Map();
-      const topBlocks = [];
-      blocks.forEach(b => {
-        if (b.famc) {
-          if (!byFamc.has(b.famc)) byFamc.set(b.famc, []);
-          byFamc.get(b.famc).push(b);
-        } else {
-          topBlocks.push(b);
-        }
-      });
-
-      const orderedBlocks = [...topBlocks];
-      byFamc.forEach((sibBlocks) => {
-        const edgeBlocks = sibBlocks.filter(b => b.hasBothAnc);
-        const centerCoupleBlocks = sibBlocks.filter(b => b.spNoAnc);
-        const singleBlocks = sibBlocks.filter(b => !b.hasBothAnc && !b.spNoAnc);
-        const half = Math.ceil(singleBlocks.length / 2);
-        const leftSingles = singleBlocks.slice(0, half);
-        const rightSingles = singleBlocks.slice(half);
-        const leftEdges = edgeBlocks.filter((_, i) => i % 2 === 0);
-        const rightEdges = edgeBlocks.filter((_, i) => i % 2 === 1);
-        orderedBlocks.push(...leftEdges, ...leftSingles, ...centerCoupleBlocks, ...rightSingles, ...rightEdges);
-      });
-
-      // Calcul du barycentre cible depuis les parents déjà placés au-dessus
-      orderedBlocks.forEach((b, idx) => {
-        let sum = 0;
-        let cnt = 0;
-        b.members.forEach(m => {
-          const fc = persons[m]?.famc;
-          if (fc && families[fc]) {
-            [families[fc].husb, families[fc].wife].forEach(pid => {
-              if (pid && xPos[pid] !== undefined) {
-                sum += xPos[pid];
-                cnt++;
-              }
-            });
-          }
-        });
-        b.targetX = cnt ? sum / cnt : idx * 240;
-        b.width = b.members.reduce((acc, m) => acc + wOf(m), 0) + Math.max(0, b.members.length - 1) * gapCouple;
-      });
-
-      orderedBlocks.sort((a, b) => a.targetX - b.targetX);
-
-      // Placement sans chevauchement puis centrage
-      let cursor = 0;
-      orderedBlocks.forEach((b, idx) => {
-        if (idx > 0) {
-          const sameFam = b.famc && b.famc === orderedBlocks[idx - 1].famc;
-          cursor += sameFam ? gapSib : gapBranch;
-        }
-        const startBx = Math.max(cursor, b.targetX - b.width / 2);
-        let mx = startBx;
-        b.members.forEach((m, mi) => {
-          const mw = wOf(m);
-          xPos[m] = mx + mw / 2;
-          mx += mw + (mi < b.members.length - 1 ? gapCouple : 0);
-        });
-        cursor = mx;
-      });
-
-      // Recentrage global de la ligne autour de 0
-      const rowCenters = orderedBlocks.flatMap(b => b.members.map(m => xPos[m]));
-      if (rowCenters.length) {
-        const mid = (Math.min(...rowCenters) + Math.max(...rowCenters)) / 2;
-        orderedBlocks.forEach(b => b.members.forEach(m => { xPos[m] -= mid; }));
-      }
-    });
-
-    // Passe bottom-up pour recentrer les parents au-dessus de leurs enfants sans créer de croisement
-    for (let i = sortedGens.length - 2; i >= 0; i--) {
-      const g = sortedGens[i];
-      const rowIds = rowsMap.get(g).slice().sort((a, b) => xPos[a] - xPos[b]);
-      const desired = {};
-      rowIds.forEach(id => {
-        const p = persons[id];
-        let sum = 0;
-        let cnt = 0;
-        (p.fams || []).forEach(fid => {
-          const f = families[fid];
-          (f?.kids || []).forEach(kid => {
-            if (xPos[kid] !== undefined) {
-              sum += xPos[kid];
-              cnt++;
-            }
-          });
-        });
-        desired[id] = cnt ? sum / cnt : xPos[id];
-      });
-
-      // Projection monotone (PAV simplifié) pour garantir 0 croisement
-      for (let k = 0; k < rowIds.length; k++) {
-        const id = rowIds[k];
-        let nx = desired[id];
-        if (k > 0) {
-          const prevId = rowIds[k - 1];
-          const minAllowed = xPos[prevId] + (wOf(prevId) + wOf(id)) / 2 + gapCouple;
-          if (nx < minAllowed) nx = minAllowed;
-        }
-        xPos[id] = nx;
-      }
-    }
-
-    const nodes = allIds.map(id => ({
-      id,
-      x: Math.round(xPos[id] || 0),
-      y: Math.round((gen[id] || 0) * rowH),
-      gen: gen[id] || 0
-    }));
-
-    const links = Object.values(families).map((f, idx) => ({
-      id: f.id,
-      husb: f.husb || '',
-      wife: f.wife || '',
-      kids: f.kids || [],
-      level: idx % 4
-    }));
-
-    return { nodes, links, flips };
   }
+  try { localStorage.setItem('heritree_sync_id', currentSyncId); } catch (e) {}
+  return currentSyncId;
+}
 
-  return { networkLayout, LV0, LVSTEP };
-})();
+function applyReadOnlyUI() {
+  ensureSyncId();
+  document.getElementById('readonly-badge')?.classList.toggle('hidden', !isReadOnlyMode);
+  document.getElementById('readonly-badge')?.classList.toggle('flex', isReadOnlyMode);
+  document.getElementById('btn-import-label')?.classList.toggle('hidden', isReadOnlyMode);
+  document.getElementById('btn-reset-demo')?.classList.toggle('hidden', isReadOnlyMode);
+  document.getElementById('reset-demo-divider')?.classList.toggle('hidden', isReadOnlyMode);
+
+  document.getElementById('insp-edit-btn')?.classList.toggle('hidden', isReadOnlyMode);
+  document.getElementById('insp-edit-fields')?.classList.toggle('hidden', isReadOnlyMode);
+  document.getElementById('insp-quick-add-section')?.classList.toggle('hidden', isReadOnlyMode);
+  document.getElementById('insp-readonly-summary')?.classList.toggle('hidden', !isReadOnlyMode);
+
+  const fullBtn = document.getElementById('insp-full-fiche-btn');
+  if (fullBtn) {
+    fullBtn.textContent = isReadOnlyMode ? '👁️ Fiche complète & frise' : '✏️ Fiche complète & preuves';
+  }
+  const sugBtn = document.getElementById('insp-suggest-btn');
+  if (sugBtn) sugBtn.classList.toggle('hidden', !isReadOnlyMode);
+
+  const modalSugBtn = document.getElementById('btn-modal-suggest');
+  if (modalSugBtn) modalSugBtn.classList.toggle('hidden', !isReadOnlyMode);
+}
 
 function saveTreeToStorage() {
-  clearTimeout(saveDebounceTimer);
-  saveDebounceTimer = null;
+  if (isReadOnlyMode || isApplyingRemote) return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(treeData));
-    flashSaveBadge();
+    const ind = document.getElementById('save-indicator');
+    if (ind) {
+      ind.textContent = '✓ Enregistré';
+      ind.classList.remove('hidden');
+    }
   } catch (e) {
     console.warn('Erreur sauvegarde locale :', e);
   }
-  pushCloudIfReady();
+  pushTreeToCloud();
 }
 
 function scheduleSaveTree() {
+  if (isReadOnlyMode || isApplyingRemote) return;
+  const ind = document.getElementById('save-indicator');
+  if (ind) ind.textContent = '⏳ Sauvegarde...';
   clearTimeout(saveDebounceTimer);
-  saveDebounceTimer = setTimeout(saveTreeToStorage, 350);
+  saveDebounceTimer = setTimeout(() => saveTreeToStorage(), 450);
 }
 
 function loadTreeFromStorage() {
+  ensureSyncId();
+  let loaded = false;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && parsed.individuals && Object.keys(parsed.individuals).length) {
         treeData = parsed;
-        normalizeTree();
-        rebuildLinks();
-        return;
+        loaded = true;
       }
     }
-  } catch (e) {
-    console.warn('Impossible de lire le stockage local :', e);
+  } catch (e) {}
+  if (!loaded) {
+    treeData = parseGedcom(FULL_USER_GEDCOM);
   }
-  treeData = parseGedcom(FULL_USER_GEDCOM);
   normalizeTree();
   rebuildLinks();
 }
 
-// ============================================================================
-// SYNCHRONISATION NUAGE & PARTAGE MULTI-APPAREILS
-// ============================================================================
-async function pushCloudIfReady() {
-  if (isReadOnlyMode || !window.HeriTreeCloud?.enabled) return;
-  const key = ensureSyncId();
-  try {
-    const ts = Date.now();
-    lastRemoteTimestamp = ts;
-    await window.HeriTreeCloud.pushTree(key, {
-      updatedAt: ts,
-      treeJson: JSON.stringify(treeData)
-    });
-  } catch (e) {
-    console.warn('Échec envoi nuage :', e);
-  }
-}
-
 async function initCloudSync() {
+  const key = ensureSyncId();
   const statusEl = document.getElementById('cloud-status-text');
   const ok = await window.HeriTreeCloud?.init();
   if (!ok) {
-    if (statusEl) statusEl.textContent = '💾 Mode local actif (hors-ligne ou sans configuration nuage)';
+    if (statusEl) statusEl.textContent = '⚪ Mode local (configurez Firebase ci-dessous pour synchroniser)';
     return;
   }
-  const key = ensureSyncId();
-  if (statusEl) statusEl.textContent = '🟢 Connecté — Synchronisation temps réel active';
+  if (statusEl) statusEl.textContent = '🟢 Connecté au nuage Firebase';
+
   window.HeriTreeCloud.subscribeTree(key, (remote) => {
-    if (!remote || !remote.treeJson) return;
-    if (remote.updatedAt && remote.updatedAt <= lastRemoteTimestamp) return;
-    lastRemoteTimestamp = remote.updatedAt || Date.now();
+    if (!remote || !remote.payload) return;
     try {
-      const parsed = JSON.parse(remote.treeJson);
-      if (parsed && parsed.individuals) {
-        treeData = parsed;
-        normalizeTree();
-        rebuildLinks();
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(treeData));
-        renderTree({ force: true });
-        if (selectedPersonId && IND()[selectedPersonId]) selectPerson(selectedPersonId);
-      }
+      const parsed = JSON.parse(remote.payload);
+      if (!parsed || !parsed.individuals) return;
+      isApplyingRemote = true;
+      treeData = parsed;
+      normalizeTree();
+      rebuildLinks();
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(treeData)); } catch (e) {}
+      renderTree({ force: true });
+      if (selectedPersonId && IND()[selectedPersonId]) selectPerson(selectedPersonId);
+      if (fichePersonId && !document.getElementById('fiche-modal').classList.contains('hidden')) renderFicheBody();
     } catch (e) {
-      console.warn('Erreur lecture donnée distante :', e);
+      console.warn('Erreur lecture nuage :', e);
+    } finally {
+      isApplyingRemote = false;
     }
   });
-  if (!isReadOnlyMode) pushCloudIfReady();
-  if (window.HeriTreeCloud?.subscribeSuggestions) {
-    window.HeriTreeCloud.subscribeSuggestions(key, (remoteList) => {
-      remoteSuggestions = remoteList || [];
+
+  if (!isReadOnlyMode) {
+    window.HeriTreeCloud.subscribeSuggestions(key, (items) => {
+      remoteSuggestions = items || [];
       refreshSuggestionsBadge();
     });
   }
 }
 
-let remoteSuggestions = [];
-
-function getAllPendingSuggestions() {
-  const local = Array.isArray(treeData.pendingSuggestions) ? treeData.pendingSuggestions : [];
-  const map = new Map();
-  local.forEach(s => map.set(s.id, s));
-  remoteSuggestions.forEach(s => map.set(s.id, s));
-  return Array.from(map.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-}
-
-function refreshSuggestionsBadge() {
-  if (isReadOnlyMode) return;
-  const btn = document.getElementById('btn-suggestions-notif');
-  const cnt = document.getElementById('suggestions-badge-count');
-  if (!btn || !cnt) return;
-  const list = getAllPendingSuggestions();
-  cnt.textContent = String(list.length);
-  btn.classList.toggle('hidden', list.length === 0);
-  btn.classList.toggle('inline-flex', list.length > 0);
-}
-
-function forceCloudSyncNow() {
-  if (isReadOnlyMode) {
-    showToast('Lecture seule : synchronisation automatique active.');
-    return;
+async function pushTreeToCloud() {
+  if (isReadOnlyMode || !window.HeriTreeCloud?.enabled) return;
+  const key = ensureSyncId();
+  try {
+    await window.HeriTreeCloud.pushTree(key, {
+      payload: JSON.stringify(treeData),
+      updatedAt: Date.now()
+    });
+  } catch (e) {
+    console.warn('Erreur envoi nuage :', e);
   }
-  saveTreeToStorage();
-  showToast('Synchronisation envoyée !');
+}
+
+async function forceCloudSyncNow() {
+  await pushTreeToCloud();
+  showToast('Synchronisation effectuée !');
 }
 
 function openShareModal() {
   const key = ensureSyncId();
-  const baseUrl = window.location.href.split('?')[0].split('#')[0];
-  const roInput = document.getElementById('share-readonly-url');
-  const editInput = document.getElementById('share-edit-url');
-  const cfgInput = document.getElementById('firebase-config-input');
-  if (roInput) roInput.value = `${baseUrl}?share=${encodeURIComponent(key)}`;
-  if (editInput) editInput.value = `${baseUrl}?edit=${encodeURIComponent(key)}`;
-  if (cfgInput) {
-    try { cfgInput.value = localStorage.getItem('heritree_custom_firebase_cfg') || ''; } catch (e) {}
-  }
-  document.getElementById('share-modal')?.classList.remove('hidden');
-}
-
-function saveCustomFirebaseConfig() {
-  const raw = (document.getElementById('firebase-config-input')?.value || '').trim();
-  if (!raw) {
-    showToast('Collez votre objet firebaseConfig d’abord.');
-    return;
-  }
+  const baseUrl = window.location.origin + window.location.pathname;
+  document.getElementById('share-readonly-url').value = `${baseUrl}?share=${encodeURIComponent(key)}`;
+  document.getElementById('share-edit-url').value = `${baseUrl}?edit=${encodeURIComponent(key)}`;
   try {
-    // Accepte aussi un collage JS du type const firebaseConfig = { apiKey: "..." };
-    let cleaned = raw.replace(/^[\s\S]*?(\{[\s\S]*\})[\s\S]*$/, '$1');
-    cleaned = cleaned.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":').replace(/'/g, '"').replace(/,\s*}/g, '}');
-    const parsed = JSON.parse(cleaned);
-    if (!parsed.apiKey || !parsed.projectId) throw new Error('Clés manquantes');
-    localStorage.setItem('heritree_custom_firebase_cfg', JSON.stringify(parsed));
-    showToast('Configuration Firebase enregistrée ! Connexion...');
-    initCloudSync();
-  } catch (e) {
-    showToast('Format invalide : copiez bien le bloc { apiKey: "...", projectId: "..." }.');
-  }
-}
-
-function clearCustomFirebaseConfig() {
-  try { localStorage.removeItem('heritree_custom_firebase_cfg'); } catch (e) {}
-  const cfgInput = document.getElementById('firebase-config-input');
-  if (cfgInput) cfgInput.value = '';
-  showToast('Configuration Firebase effacée.');
+    const saved = localStorage.getItem('heritree_custom_firebase_cfg');
+    if (saved) document.getElementById('firebase-config-input').value = saved;
+  } catch (e) {}
+  document.getElementById('share-modal')?.classList.remove('hidden');
 }
 
 function closeShareModal() {
@@ -1458,42 +1198,67 @@ function copyInputValue(inputId, msg) {
   const el = document.getElementById(inputId);
   if (!el) return;
   el.select();
-  el.setSelectionRange(0, 99999);
+  document.execCommand('copy');
+  showToast(msg || 'Lien copié !');
+}
+
+async function saveCustomFirebaseConfig() {
+  const raw = (document.getElementById('firebase-config-input')?.value || '').trim();
+  if (!raw) return;
   try {
-    document.execCommand('copy');
-    showToast(msg || 'Lien copié !');
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    const parsed = Function(`"use strict"; return (${jsonMatch ? jsonMatch[0] : raw});`)();
+    if (!parsed || !parsed.apiKey || !parsed.projectId) throw new Error('Clés invalides');
+    localStorage.setItem('heritree_custom_firebase_cfg', JSON.stringify(parsed));
+    await initCloudSync();
+    await pushTreeToCloud();
+    showToast('Base Firebase enregistrée et connectée !');
   } catch (e) {
-    showToast('Sélectionnez et copiez le lien manuellement.');
+    showToast('Format firebaseConfig invalide.');
   }
 }
 
-function applyReadOnlyUI() {
-  if (!isReadOnlyMode) return;
-  document.getElementById('readonly-badge')?.classList.remove('hidden');
-  document.getElementById('readonly-badge')?.classList.add('inline-flex');
-  document.getElementById('btn-import-label')?.classList.add('hidden');
-  document.getElementById('btn-reset-demo')?.classList.add('hidden');
-  document.getElementById('reset-demo-divider')?.classList.add('hidden');
-  document.getElementById('insp-edit-btn')?.classList.add('hidden');
-  document.getElementById('insp-edit-fields')?.classList.add('hidden');
-  document.getElementById('insp-quick-add-section')?.classList.add('hidden');
-  document.getElementById('insp-readonly-summary')?.classList.remove('hidden');
-  document.getElementById('insp-suggest-btn')?.classList.remove('hidden');
-  document.getElementById('btn-modal-suggest')?.classList.remove('hidden');
-  const fullBtn = document.getElementById('insp-full-fiche-btn');
-  if (fullBtn) fullBtn.textContent = '📖 Voir la fiche';
+function clearCustomFirebaseConfig() {
+  try { localStorage.removeItem('heritree_custom_firebase_cfg'); } catch (e) {}
+  document.getElementById('firebase-config-input').value = '';
+  showToast('Configuration Firebase effacée.');
+}
+
+function getAllPendingSuggestions() {
+  const map = new Map();
+  (treeData.pendingSuggestions || []).forEach(s => map.set(s.id, s));
+  (remoteSuggestions || []).forEach(s => map.set(s.id, s));
+  return Array.from(map.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+}
+
+function refreshSuggestionsBadge() {
+  const btn = document.getElementById('btn-suggestions-notif');
+  const badge = document.getElementById('suggestions-badge-count');
+  if (!btn || !badge) return;
+  if (isReadOnlyMode) {
+    btn.classList.add('hidden');
+    return;
+  }
+  const count = getAllPendingSuggestions().length;
+  badge.textContent = String(count);
+  btn.classList.toggle('hidden', count === 0);
+  btn.classList.toggle('flex', count > 0);
 }
 
 // ============================================================================
 // SUGGESTIONS DE MODIFICATIONS (MODE LECTURE SEULE -> NOTIFICATIONS)
 // ============================================================================
 let suggestTargetId = null;
+let suggestDraftPortrait = '';
+let suggestDraftDocs = [];
 
 function openSuggestModal(pid) {
   const targetId = pid || selectedPersonId || fichePersonId;
   const p = IND()[targetId];
   if (!p) return;
   suggestTargetId = targetId;
+  suggestDraftPortrait = '';
+  suggestDraftDocs = [];
   document.getElementById('suggest-target-label').textContent = `Fiche de ${fullName(p)}`;
   document.getElementById('sug-given').value = p.given || '';
   document.getElementById('sug-surname').value = p.surname || '';
@@ -1504,6 +1269,10 @@ function openSuggestModal(pid) {
   document.getElementById('sug-occu').value = p.occu || '';
   document.getElementById('sug-note').value = p.note || '';
   document.getElementById('sug-comment').value = '';
+  const pPrev = document.getElementById('sug-portrait-preview');
+  const dPrev = document.getElementById('sug-docs-preview');
+  if (pPrev) pPrev.innerHTML = '';
+  if (dPrev) dPrev.innerHTML = '';
   try {
     const savedAuthor = localStorage.getItem('heritree_sug_author');
     if (savedAuthor) document.getElementById('sug-author').value = savedAuthor;
@@ -1513,6 +1282,57 @@ function openSuggestModal(pid) {
 
 function closeSuggestModal() {
   document.getElementById('suggest-modal')?.classList.add('hidden');
+}
+
+function compressImageDataUrl(file, maxDim = 900, quality = 0.8) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleSuggestPortraitUpload(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  suggestDraftPortrait = await compressImageDataUrl(file, 260, 0.82);
+  const pPrev = document.getElementById('sug-portrait-preview');
+  if (pPrev) {
+    pPrev.innerHTML = `<div class="flex items-center gap-2 mt-1"><img src="${ea(suggestDraftPortrait)}" class="w-10 h-10 rounded-full object-cover border border-amber-300" /><span>✓ Photo prête à envoyer</span></div>`;
+  }
+}
+
+async function handleSuggestDocsUpload(event) {
+  const files = Array.from(event.target.files || []);
+  if (!files.length) return;
+  for (const file of files) {
+    const meta = parseProofMetadataFromFilename(file.name);
+    const dataUrl = await compressImageDataUrl(file, 900, 0.78);
+    suggestDraftDocs.push({
+      id: 'DOC_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+      title: meta.title,
+      category: meta.category,
+      date: meta.date,
+      note: '',
+      mediaType: 'image',
+      dataUrl
+    });
+  }
+  const dPrev = document.getElementById('sug-docs-preview');
+  if (dPrev) {
+    dPrev.textContent = `✓ ${suggestDraftDocs.length} pièce(s) justificative(s) prête(s)`;
+  }
 }
 
 async function submitModificationSuggestions() {
@@ -1534,8 +1354,28 @@ async function submitModificationSuggestions() {
   ];
 
   const diffs = candidates.filter(c => c.oldVal !== c.newVal);
+  if (suggestDraftPortrait) {
+    diffs.push({
+      field: 'photo',
+      label: 'Photo portrait',
+      oldVal: p.photo ? '(Photo existante)' : '(Aucune photo)',
+      newVal: 'Nouvelle photo portrait proposée',
+      mediaDataUrl: suggestDraftPortrait
+    });
+  }
+  suggestDraftDocs.forEach(docItem => {
+    diffs.push({
+      field: 'document',
+      label: `Pièce justificative : ${docItem.title}`,
+      oldVal: '(Nouvelle pièce)',
+      newVal: `${docItem.title} (${docItem.category})`,
+      mediaDataUrl: docItem.dataUrl,
+      docPayload: docItem
+    });
+  });
+
   if (!diffs.length) {
-    showToast('Aucune modification détectée par rapport à la fiche actuelle.');
+    showToast('Aucune modification ou photo ajoutée par rapport à la fiche actuelle.');
     return;
   }
 
@@ -1553,6 +1393,8 @@ async function submitModificationSuggestions() {
       label: d.label,
       oldVal: d.oldVal,
       newVal: d.newVal,
+      mediaDataUrl: d.mediaDataUrl || '',
+      docPayload: d.docPayload || null,
       createdAt: Date.now()
     };
     treeData.pendingSuggestions.push(item);
@@ -1589,23 +1431,33 @@ function renderSuggestionsReviewList() {
         <div>
           <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold text-[10.5px]">💡 ${escapeHtml(s.author || 'Famille')}</span>
           <span class="font-extrabold text-slate-900 ml-1">${escapeHtml(s.personName || s.personId)}</span>
-          <span class="text-slate-500">• Champ : <strong>${escapeHtml(s.label)}</strong></span>
+          <span class="text-slate-500">• <strong>${escapeHtml(s.label)}</strong></span>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
           <button onclick="acceptSuggestion('${ea(s.id)}')" class="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px]">✅ Accepter</button>
           <button onclick="rejectSuggestion('${ea(s.id)}')" class="px-2.5 py-1 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold text-[11px]">❌ Refuser</button>
         </div>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-        <div class="p-2 rounded-xl bg-white border border-slate-200">
-          <span class="block text-[9.5px] font-bold uppercase text-slate-400">Valeur actuelle</span>
-          <span class="text-slate-600 line-through">${escapeHtml(s.oldVal || '(Vide)')}</span>
+      ${s.mediaDataUrl ? `
+        <div class="flex items-center gap-3 p-2 rounded-xl bg-white border border-emerald-200">
+          <img src="${ea(s.mediaDataUrl)}" onclick="openDocPreview('${ea(s.label)}', '${ea(s.mediaDataUrl)}', 'image')" class="w-16 h-16 rounded-xl object-cover cursor-pointer border border-slate-200" />
+          <div class="text-[11px]">
+            <div class="font-bold text-emerald-900">${escapeHtml(s.newVal)}</div>
+            <button type="button" onclick="openDocPreview('${ea(s.label)}', '${ea(s.mediaDataUrl)}', 'image')" class="text-orange-600 font-semibold hover:underline mt-0.5">🔍 Agrandir la photo</button>
+          </div>
         </div>
-        <div class="p-2 rounded-xl bg-emerald-50/80 border border-emerald-200">
-          <span class="block text-[9.5px] font-bold uppercase text-emerald-700">Modification proposée</span>
-          <span class="font-bold text-emerald-950">${escapeHtml(s.newVal || '(Vide)')}</span>
+      ` : `
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+          <div class="p-2 rounded-xl bg-white border border-slate-200">
+            <span class="block text-[9.5px] font-bold uppercase text-slate-400">Valeur actuelle</span>
+            <span class="text-slate-600 line-through">${escapeHtml(s.oldVal || '(Vide)')}</span>
+          </div>
+          <div class="p-2 rounded-xl bg-emerald-50/80 border border-emerald-200">
+            <span class="block text-[9.5px] font-bold uppercase text-emerald-700">Modification proposée</span>
+            <span class="font-bold text-emerald-950">${escapeHtml(s.newVal || '(Vide)')}</span>
+          </div>
         </div>
-      </div>
+      `}
       ${s.comment ? `<div class="text-[11px] text-slate-600 italic">💬 « ${escapeHtml(s.comment)} »</div>` : ''}
     </div>
   `).join('');
@@ -1617,7 +1469,13 @@ async function acceptSuggestion(sugId) {
   if (!s) return;
   const p = IND()[s.personId];
   if (p) {
-    if (s.field.includes('.')) {
+    if (s.field === 'photo' && s.mediaDataUrl) {
+      p.photo = s.mediaDataUrl;
+      renderTree();
+    } else if (s.field === 'document' && s.docPayload) {
+      if (!Array.isArray(p.documents)) p.documents = [];
+      p.documents.push(s.docPayload);
+    } else if (s.field.includes('.')) {
       const [obj, key] = s.field.split('.');
       if (!p[obj]) p[obj] = {};
       p[obj][key] = s.newVal;
@@ -3223,31 +3081,29 @@ function handlePhotoUpload(event) {
       p.photo = canvas.toDataURL('image/jpeg', 0.82);
       saveTreeToStorage();
       renderTree();
-      renderFicheBody();
       if (selectedPersonId === p.id) selectPerson(p.id);
-      showToast('Portrait mis à jour !');
+      renderFicheBody();
+      showToast('Photo portrait mise à jour !');
     };
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-// Extraction automatique depuis le nom de fichier pour les preuves justificatives
 function parseProofMetadataFromFilename(filename) {
-  const base = filename.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ').trim();
-  const low = base.toLowerCase();
-  let category = 'Document / Archive';
-  if (low.includes('naiss')) category = 'Acte de naissance';
-  else if (low.includes('bapt')) category = 'Acte de baptême';
-  else if (low.includes('mariag') || low.includes('marr')) category = 'Acte de mariage';
-  else if (low.includes('pacs')) category = 'Certificat de PACS';
-  else if (low.includes('deces') || low.includes('décès') || low.includes('mort')) category = 'Acte de décès';
-  else if (low.includes('recens')) category = 'Recensement';
-  else if (low.includes('milita') || low.includes('matricule')) category = 'Fiche matricule';
-
-  const dateMatch = base.match(/(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}|\b(?:17|18|19|20)\d{2}\b)/);
-  const extractedDate = dateMatch ? dateMatch[1] : '';
-  return { title: base || 'Preuve justificative', category, date: extractedDate };
+  const base = String(filename || 'Document').replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
+  const dateMatch = base.match(/\b(18\d{2}|19\d{2}|20\d{2})\b/);
+  let category = 'Pièce justificative';
+  if (/naissance|bapt/i.test(base)) category = 'Acte de naissance';
+  else if (/mariage|pacs|union/i.test(base)) category = 'Acte de mariage';
+  else if (/deces|décès|inhum/i.test(base)) category = 'Acte de décès';
+  else if (/livret|recensement/i.test(base)) category = 'Livret de famille';
+  else if (/photo|portrait|famille/i.test(base)) category = 'Photographie';
+  return {
+    title: base || 'Document justificatif',
+    category,
+    date: dateMatch ? dateMatch[1] : ''
+  };
 }
 
 function handleDocumentUpload(event) {
@@ -3256,13 +3112,12 @@ function handleDocumentUpload(event) {
   if (!files.length || !p) return;
   if (!Array.isArray(p.documents)) p.documents = [];
 
-  let processed = 0;
   files.forEach(file => {
     const meta = parseProofMetadataFromFilename(file.name);
     const isVideo = file.type.startsWith('video/');
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (isVideo) {
+    if (isVideo) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
         p.documents.push({
           id: 'DOC_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
           title: meta.title,
@@ -3270,24 +3125,14 @@ function handleDocumentUpload(event) {
           date: meta.date,
           note: '',
           mediaType: 'video',
-          dataUrl: e.target.result
+          dataUrl: ev.target.result
         });
-        processed++;
-        if (processed === files.length) {
-          saveTreeToStorage();
-          renderFicheBody();
-          showToast(`${files.length} média(s) ajouté(s) !`);
-        }
-        return;
-      }
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const maxDim = 960;
-        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        saveTreeToStorage();
+        renderFicheBody();
+      };
+      reader.readAsDataURL(file);
+    } else {
+      compressImageDataUrl(file, 1100, 0.82).then(dataUrl => {
         p.documents.push({
           id: 'DOC_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
           title: meta.title,
@@ -3295,86 +3140,128 @@ function handleDocumentUpload(event) {
           date: meta.date,
           note: '',
           mediaType: 'image',
-          dataUrl: canvas.toDataURL('image/jpeg', 0.8)
+          dataUrl
         });
-        processed++;
-        if (processed === files.length) {
-          saveTreeToStorage();
-          renderFicheBody();
-          if (selectedPersonId === p.id) refreshInspectorMissing(p.id);
-          showToast(`${files.length} preuve(s) ajoutée(s) !`);
-        }
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+        saveTreeToStorage();
+        renderFicheBody();
+      });
+    }
   });
+  event.target.value = '';
 }
 
-function attachMediaToExistingDoc(docIdx, event) {
+function attachMediaToExistingDoc(idx, event) {
   const file = event.target.files?.[0];
   const p = P();
-  if (!file || !p || !p.documents?.[docIdx]) return;
+  if (!file || !p || !p.documents?.[idx]) return;
   const isVideo = file.type.startsWith('video/');
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    if (isVideo) {
-      p.documents[docIdx].dataUrl = e.target.result;
-      p.documents[docIdx].mediaType = 'video';
+  if (isVideo) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      p.documents[idx].mediaType = 'video';
+      p.documents[idx].dataUrl = ev.target.result;
       saveTreeToStorage();
       renderFicheBody();
-      showToast('Vidéo rattachée avec succès !');
-      return;
-    }
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const maxDim = 960;
-      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-      canvas.width = Math.round(img.width * scale);
-      canvas.height = Math.round(img.height * scale);
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      p.documents[docIdx].dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-      p.documents[docIdx].mediaType = 'image';
-      if (!p.photo) p.photo = p.documents[docIdx].dataUrl;
-      saveTreeToStorage();
-      renderTree();
-      renderFicheBody();
-      showToast('Image rattachée avec succès !');
+      showToast('Vidéo rattachée !');
     };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
+    reader.readAsDataURL(file);
+  } else {
+    compressImageDataUrl(file, 1100, 0.82).then(dataUrl => {
+      p.documents[idx].mediaType = 'image';
+      p.documents[idx].dataUrl = dataUrl;
+      saveTreeToStorage();
+      renderFicheBody();
+      showToast('Image rattachée !');
+    });
+  }
 }
 
-function updateDocumentField(docIdx, field, val) {
+function updateDocumentField(idx, field, val) {
   const p = P();
-  if (!p || !p.documents?.[docIdx]) return;
-  p.documents[docIdx][field] = val;
+  if (!p || !p.documents?.[idx]) return;
+  p.documents[idx][field] = val;
   scheduleSaveTree();
 }
 
-function deleteDocument(docIdx) {
+function deleteDocument(idx) {
   const p = P();
   if (!p || !p.documents) return;
-  p.documents.splice(docIdx, 1);
+  p.documents.splice(idx, 1);
   saveTreeToStorage();
   renderFicheBody();
+}
+
+let docPreviewZoom = 1;
+let docPreviewPan = { x: 0, y: 0 };
+let docPreviewDragging = false;
+let docPreviewDragStart = { x: 0, y: 0 };
+
+function applyDocPreviewTransform() {
+  const img = document.getElementById('doc-preview-img');
+  const lbl = document.getElementById('doc-zoom-label');
+  if (img) {
+    img.style.transform = `translate3d(${docPreviewPan.x}px, ${docPreviewPan.y}px, 0) scale(${docPreviewZoom})`;
+    img.style.cursor = docPreviewZoom > 1 ? 'grab' : 'zoom-in';
+  }
+  if (lbl) lbl.textContent = `${Math.round(docPreviewZoom * 100)}%`;
+}
+
+function zoomDocPreview(factor) {
+  docPreviewZoom = Math.min(5, Math.max(0.5, docPreviewZoom * factor));
+  if (docPreviewZoom <= 1) docPreviewPan = { x: 0, y: 0 };
+  applyDocPreviewTransform();
+}
+
+function resetDocPreviewZoom() {
+  docPreviewZoom = 1;
+  docPreviewPan = { x: 0, y: 0 };
+  applyDocPreviewTransform();
 }
 
 function openDocPreview(title, src, mediaType = 'image') {
   if (!src) return;
   document.getElementById('doc-preview-title').textContent = title || 'Document';
   const container = document.getElementById('doc-preview-container');
+  const zoomCtrls = document.getElementById('doc-zoom-controls');
+  docPreviewZoom = 1;
+  docPreviewPan = { x: 0, y: 0 };
+
   if (mediaType === 'video' || String(src).startsWith('data:video/')) {
+    zoomCtrls?.classList.add('hidden');
     container.innerHTML = `<video src="${ea(src)}" controls autoplay class="max-w-full max-h-[75vh] rounded-xl shadow"></video>`;
   } else {
-    container.innerHTML = `<img id="doc-preview-img" src="${ea(src)}" alt="Aperçu acte" class="max-w-full max-h-[75vh] object-contain rounded-xl shadow" />`;
+    zoomCtrls?.classList.remove('hidden');
+    container.innerHTML = `<img id="doc-preview-img" src="${ea(src)}" alt="Aperçu acte" draggable="false" class="max-w-full max-h-full object-contain rounded-lg shadow transition-transform duration-75" />`;
+    const img = document.getElementById('doc-preview-img');
+    container.onwheel = (e) => {
+      e.preventDefault();
+      zoomDocPreview(e.deltaY < 0 ? 1.2 : 0.82);
+    };
+    img.onclick = (e) => {
+      e.stopPropagation();
+      if (docPreviewZoom === 1) zoomDocPreview(2);
+      else resetDocPreviewZoom();
+    };
+    img.onmousedown = (e) => {
+      if (docPreviewZoom <= 1) return;
+      e.preventDefault();
+      docPreviewDragging = true;
+      docPreviewDragStart = { x: e.clientX - docPreviewPan.x, y: e.clientY - docPreviewPan.y };
+    };
+    window.addEventListener('mousemove', (e) => {
+      if (!docPreviewDragging) return;
+      docPreviewPan.x = e.clientX - docPreviewDragStart.x;
+      docPreviewPan.y = e.clientY - docPreviewDragStart.y;
+      applyDocPreviewTransform();
+    });
+    window.addEventListener('mouseup', () => { docPreviewDragging = false; });
+    applyDocPreviewTransform();
   }
   document.getElementById('doc-preview-modal').classList.remove('hidden');
 }
 
 function closeDocPreview() {
+  docPreviewDragging = false;
   document.getElementById('doc-preview-modal').classList.add('hidden');
 }
 
@@ -3412,12 +3299,30 @@ function buildPersonTimeline(p) {
   const items = [];
   const parseYear = (d) => {
     const m = String(d || '').match(/(\d{4})/);
-    return m ? parseInt(m[1], 10) : 9999;
+    return m ? parseInt(m[1], 10) : null;
+  };
+
+  const birthYear = parseYear(p.birt?.date);
+  const deathYear = parseYear(p.deat?.date);
+  const maxLifeYear = deathYear ?? new Date().getFullYear();
+
+  const formatAgeAt = (evYear) => {
+    if (birthYear === null || evYear === null) return '';
+    const age = evYear - birthYear;
+    if (age < 0) return '';
+    if (age === 0) return '0 an (Naissance)';
+    return `${age} an${age > 1 ? 's' : ''}`;
+  };
+
+  const isDuringLifetime = (evYear) => {
+    if (birthYear === null || evYear === null) return true;
+    return evYear >= birthYear && evYear <= maxLifeYear;
   };
 
   if (p.birt?.date || p.birt?.place) {
     items.push({
-      year: parseYear(p.birt.date),
+      year: birthYear ?? 9999,
+      ageLabel: birthYear !== null ? '0 an' : '',
       icon: '🎂',
       title: 'Naissance',
       date: p.birt.date || 'Date inconnue',
@@ -3426,24 +3331,30 @@ function buildPersonTimeline(p) {
     });
   }
 
+  // Déménagements, changements de métier & étapes personnelles
   (p.events || []).forEach(ev => {
+    const y = parseYear(ev.date);
     items.push({
-      year: parseYear(ev.date),
+      year: y ?? 9999,
+      ageLabel: formatAgeAt(y),
       icon: ev.type === 'job' ? '💼' : '🏠',
       title: ev.label || 'Étape de vie',
       date: ev.date || '',
       place: ev.place || '',
-      color: 'bg-slate-50 border-slate-200 text-slate-800'
+      color: 'bg-indigo-50/70 border-indigo-200 text-indigo-950'
     });
   });
 
+  // Unions, séparations et naissances des enfants & petits-enfants
   getSpousesOf(p.id).forEach(({ spouseId, famId }) => {
     const sp = IND()[spouseId];
     const fam = FAM()[famId];
     const uLabel = fam?.unionType === 'pacs' ? 'PACS' : (fam?.unionType === 'together' ? 'Ensemble' : 'Mariage');
     if (fam?.marr?.date || fam?.marr?.place || sp) {
+      const y = parseYear(fam?.marr?.date);
       items.push({
-        year: parseYear(fam?.marr?.date),
+        year: y ?? 9999,
+        ageLabel: formatAgeAt(y),
         icon: '💍',
         title: `${uLabel} avec ${fullName(sp)}`,
         date: fam?.marr?.date || '',
@@ -3452,8 +3363,10 @@ function buildPersonTimeline(p) {
       });
     }
     if (fam?.div?.date || fam?.div?.place) {
+      const y = parseYear(fam.div.date);
       items.push({
-        year: parseYear(fam.div.date),
+        year: y ?? 9999,
+        ageLabel: formatAgeAt(y),
         icon: '💔',
         title: `Séparation / Divorce (${fullName(sp)})`,
         date: fam.div.date || '',
@@ -3464,20 +3377,79 @@ function buildPersonTimeline(p) {
     (fam?.children || []).forEach(cid => {
       const c = IND()[cid];
       if (!c) return;
+      const cy = parseYear(c.birt?.date);
       items.push({
-        year: parseYear(c.birt?.date),
+        year: cy ?? 9999,
+        ageLabel: formatAgeAt(cy),
         icon: '👶',
-        title: `Naissance de ${fullName(c)}`,
+        title: `Naissance de ${c.sex === 'F' ? 'sa fille' : (c.sex === 'M' ? 'son fils' : 'son enfant')} ${fullName(c)}`,
         date: c.birt?.date || '',
         place: c.birt?.place || '',
         color: 'bg-emerald-50 border-emerald-200 text-emerald-950'
       });
+
+      // Petits-enfants nés durant sa vie
+      getSpousesOf(cid).forEach(({ famId: cFamId }) => {
+        (FAM()[cFamId]?.children || []).forEach(gcId => {
+          const gc = IND()[gcId];
+          if (!gc) return;
+          const gcy = parseYear(gc.birt?.date);
+          if (gcy !== null && isDuringLifetime(gcy)) {
+            items.push({
+              year: gcy,
+              ageLabel: formatAgeAt(gcy),
+              icon: '🧸',
+              title: `Naissance de ${gc.sex === 'F' ? 'sa petite-fille' : 'son petit-fils'} ${fullName(gc)}`,
+              date: gc.birt?.date || '',
+              place: gc.birt?.place || '',
+              color: 'bg-teal-50/80 border-teal-200 text-teal-950'
+            });
+          }
+        });
+      });
     });
+  });
+
+  // Événements de la famille proche durant sa vie (parents, grands-parents, oncles & tantes)
+  const { father, mother } = getParentsOf(p.id);
+  const closeRelatives = [];
+  if (father && IND()[father]) closeRelatives.push({ id: father, role: 'son père' });
+  if (mother && IND()[mother]) closeRelatives.push({ id: mother, role: 'sa mère' });
+
+  [father, mother].forEach(parentId => {
+    if (!parentId || !IND()[parentId]) return;
+    const gp = getParentsOf(parentId);
+    if (gp.father && IND()[gp.father]) closeRelatives.push({ id: gp.father, role: 'son grand-père' });
+    if (gp.mother && IND()[gp.mother]) closeRelatives.push({ id: gp.mother, role: 'sa grand-mère' });
+    getSiblingsOf(parentId).forEach(auId => {
+      const au = IND()[auId];
+      if (au) closeRelatives.push({ id: auId, role: au.sex === 'F' ? 'sa tante' : 'son oncle' });
+    });
+  });
+
+  const seenRelIds = new Set();
+  closeRelatives.forEach(({ id: relId, role }) => {
+    if (seenRelIds.has(relId)) return;
+    seenRelIds.add(relId);
+    const rel = IND()[relId];
+    const dy = parseYear(rel?.deat?.date);
+    if (dy !== null && isDuringLifetime(dy) && relId !== p.id) {
+      items.push({
+        year: dy,
+        ageLabel: formatAgeAt(dy),
+        icon: '🕯️',
+        title: `Décès de ${role} ${fullName(rel)}`,
+        date: rel.deat.date,
+        place: rel.deat.place || '',
+        color: 'bg-slate-50 border-slate-200 text-slate-700'
+      });
+    }
   });
 
   if (p.deat?.status || p.deat?.date || p.deat?.place) {
     items.push({
-      year: parseYear(p.deat.date),
+      year: deathYear ?? 9999,
+      ageLabel: formatAgeAt(deathYear),
       icon: '🕊️',
       title: 'Décès',
       date: p.deat.date || 'Date inconnue',
@@ -3765,7 +3737,10 @@ function renderFicheBody() {
                   ${item.place ? `<div class="text-[10.5px] opacity-80 truncate">📍 ${escapeHtml(item.place)}</div>` : ''}
                 </div>
               </div>
-              <span class="text-[11px] font-bold shrink-0">${escapeHtml(item.date || '')}</span>
+              <div class="text-right shrink-0">
+                <div class="text-[11px] font-bold">${escapeHtml(item.date || '')}</div>
+                ${item.ageLabel ? `<div class="text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-white/80 text-orange-700 inline-block mt-0.5">${escapeHtml(item.ageLabel)}</div>` : ''}
+              </div>
             </div>
           `).join('')}
         </div>
@@ -3923,6 +3898,263 @@ window.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('resize', () => {
   if (viewMode === 'radial') renderTree();
 });
+
+// ============================================================================
+// MOTEUR DE PLACEMENT ORGANIQUE SANS CROISEMENT (RÉSEAU)
+// ============================================================================
+window.HeriTreeNetwork = (function () {
+  function pav(items) {
+    const blocks = items.map(it => ({
+      items: [it],
+      weight: it.weight || 1,
+      sum: (it.weight || 1) * it.target,
+      width: it.width
+    }));
+    let i = 0;
+    while (i < blocks.length - 1) {
+      const a = blocks[i];
+      const b = blocks[i + 1];
+      const ca = a.sum / a.weight;
+      const cb = b.sum / b.weight;
+      const minDist = (a.width + b.width) / 2;
+      if (ca + minDist > cb + 1e-6) {
+        const mergedW = a.weight + b.weight;
+        const mergedWidth = a.width + b.width;
+        const mergedSum = a.sum + b.sum;
+        blocks.splice(i, 2, {
+          items: [...a.items, ...b.items],
+          weight: mergedW,
+          sum: mergedSum,
+          width: mergedWidth
+        });
+        if (i > 0) i--;
+      } else {
+        i++;
+      }
+    }
+    const result = new Map();
+    blocks.forEach(bl => {
+      const center = bl.sum / bl.weight;
+      let cursor = center - bl.width / 2;
+      bl.items.forEach(it => {
+        result.set(it.id, cursor + it.width / 2);
+        cursor += it.width;
+      });
+    });
+    return result;
+  }
+
+  function networkLayout({ persons, families }, rootId, opts = {}) {
+    const widthOf = opts.widthOf || (() => 170);
+    const padX = 28;
+    const rowHeight = 135;
+
+    const gen = new Map();
+    if (rootId && persons[rootId]) {
+      gen.set(rootId, 0);
+      const q = [rootId];
+      while (q.length) {
+        const cur = q.shift();
+        const g = gen.get(cur);
+        const p = persons[cur];
+        if (!p) continue;
+        if (p.famc && families[p.famc]) {
+          const f = families[p.famc];
+          [f.husb, f.wife].forEach(pid => {
+            if (pid && persons[pid] && !gen.has(pid)) {
+              gen.set(pid, g - 1);
+              q.push(pid);
+            }
+          });
+          (f.kids || []).forEach(sid => {
+            if (sid && persons[sid] && !gen.has(sid)) {
+              gen.set(sid, g);
+              q.push(sid);
+            }
+          });
+        }
+        (p.fams || []).forEach(fid => {
+          const f = families[fid];
+          if (!f) return;
+          [f.husb, f.wife].forEach(sp => {
+            if (sp && persons[sp] && !gen.has(sp)) {
+              gen.set(sp, g);
+              q.push(sp);
+            }
+          });
+          (f.kids || []).forEach(cid => {
+            if (cid && persons[cid] && !gen.has(cid)) {
+              gen.set(cid, g + 1);
+              q.push(cid);
+            }
+          });
+        });
+      }
+    }
+
+    Object.keys(persons).forEach(id => {
+      if (!gen.has(id)) gen.set(id, 0);
+    });
+
+    const rowsMap = new Map();
+    gen.forEach((g, id) => {
+      if (!rowsMap.has(g)) rowsMap.set(g, []);
+      rowsMap.get(g).push(id);
+    });
+
+    const sortedGens = Array.from(rowsMap.keys()).sort((a, b) => a - b);
+    const rowOrder = new Map();
+
+    // Construction d'un ordre initial propre : parents groupés + fratries avec conjoints sans ascendance au centre
+    sortedGens.forEach(g => {
+      const ids = rowsMap.get(g);
+      const placed = new Set();
+      const ordered = [];
+
+      const byFamc = new Map();
+      ids.forEach(id => {
+        const fc = persons[id].famc || '__NO_FAMC__';
+        if (!byFamc.has(fc)) byFamc.set(fc, []);
+        byFamc.get(fc).push(id);
+      });
+
+      const hasAncestors = (pid) => Boolean(persons[pid]?.famc && families[persons[pid].famc]);
+
+      byFamc.forEach((sibs, fc) => {
+        const units = [];
+        const usedInSib = new Set();
+        sibs.forEach(sid => {
+          if (usedInSib.has(sid)) return;
+          usedInSib.add(sid);
+          const spFams = (persons[sid].fams || []).map(fid => families[fid]).filter(Boolean);
+          const spId = spFams.map(f => (f.husb === sid ? f.wife : f.husb)).find(x => x && ids.includes(x) && !usedInSib.has(x));
+          if (spId) {
+            usedInSib.add(spId);
+            const spHasAnc = hasAncestors(spId);
+            const members = persons[sid].sex === 'F' && persons[spId].sex === 'M' ? [spId, sid] : [sid, spId];
+            units.push({ members, edgePinned: spHasAnc });
+          } else {
+            units.push({ members: [sid], edgePinned: false });
+          }
+        });
+
+        // Règle : conjoint sans ascendance au milieu de la fratrie, conjoint avec ascendance au bord
+        const centerUnits = units.filter(u => !u.edgePinned);
+        const edgeUnits = units.filter(u => u.edgePinned);
+        const arranged = [];
+        if (edgeUnits.length) arranged.push(edgeUnits[0]);
+        arranged.push(...centerUnits);
+        for (let k = 1; k < edgeUnits.length; k++) arranged.push(edgeUnits[k]);
+
+        arranged.forEach(u => {
+          u.members.forEach(m => {
+            if (!placed.has(m)) {
+              placed.add(m);
+              ordered.push(m);
+            }
+          });
+        });
+      });
+
+      ids.forEach(id => {
+        if (!placed.has(id)) {
+          placed.add(id);
+          ordered.push(id);
+        }
+      });
+      rowOrder.set(g, ordered);
+    });
+
+    const xPos = new Map();
+    sortedGens.forEach(g => {
+      let curX = 0;
+      rowOrder.get(g).forEach(id => {
+        const w = widthOf(id) + padX;
+        xPos.set(id, curX + w / 2);
+        curX += w;
+      });
+    });
+
+    // Passes d'attraction haut/bas + optimisation locale d'échanges sans croisement
+    for (let iter = 0; iter < 8; iter++) {
+      // Descente : aligner les enfants sous leurs parents
+      for (let idx = 1; idx < sortedGens.length; idx++) {
+        const g = sortedGens[idx];
+        const ord = rowOrder.get(g);
+        const items = ord.map(id => {
+          const targets = [];
+          const fc = persons[id].famc;
+          if (fc && families[fc]) {
+            const f = families[fc];
+            const px = [f.husb, f.wife].filter(x => x && xPos.has(x)).map(x => xPos.get(x));
+            if (px.length) targets.push(px.reduce((a, b) => a + b, 0) / px.length);
+          }
+          (persons[id].fams || []).forEach(fid => {
+            const f = families[fid];
+            if (!f) return;
+            const sp = f.husb === id ? f.wife : f.husb;
+            if (sp && xPos.has(sp)) targets.push(xPos.get(sp));
+          });
+          const t = targets.length ? targets.reduce((a, b) => a + b, 0) / targets.length : xPos.get(id);
+          return { id, target: t, width: widthOf(id) + padX, weight: 1 };
+        });
+        const solved = pav(items);
+        solved.forEach((v, k) => xPos.set(k, v));
+      }
+
+      // Montée : aligner les parents au-dessus de leurs enfants
+      for (let idx = sortedGens.length - 2; idx >= 0; idx--) {
+        const g = sortedGens[idx];
+        const ord = rowOrder.get(g);
+        const items = ord.map(id => {
+          const targets = [];
+          (persons[id].fams || []).forEach(fid => {
+            const f = families[fid];
+            if (!f) return;
+            const sp = f.husb === id ? f.wife : f.husb;
+            if (sp && xPos.has(sp)) targets.push(xPos.get(sp));
+            const kx = (f.kids || []).filter(k => xPos.has(k)).map(k => xPos.get(k));
+            if (kx.length) targets.push(kx.reduce((a, b) => a + b, 0) / kx.length);
+          });
+          const t = targets.length ? targets.reduce((a, b) => a + b, 0) / targets.length : xPos.get(id);
+          return { id, target: t, width: widthOf(id) + padX, weight: 1 };
+        });
+        const solved = pav(items);
+        solved.forEach((v, k) => xPos.set(k, v));
+      }
+    }
+
+    // Centrage horizontal global autour de 0
+    let allMin = Infinity, allMax = -Infinity;
+    xPos.forEach(v => {
+      if (v < allMin) allMin = v;
+      if (v > allMax) allMax = v;
+    });
+    const shiftX = isFinite(allMin) ? -(allMin + allMax) / 2 : 0;
+
+    const nodes = [];
+    sortedGens.forEach(g => {
+      rowOrder.get(g).forEach(id => {
+        nodes.push({
+          id,
+          x: (xPos.get(id) || 0) + shiftX,
+          y: g * rowHeight
+        });
+      });
+    });
+
+    const links = Object.values(families).map(f => ({
+      id: f.id,
+      husb: f.husb || '',
+      wife: f.wife || '',
+      kids: [...(f.kids || [])]
+    }));
+
+    return { nodes, links };
+  }
+
+  return { networkLayout };
+})();
 </script>
 </body>
 </html>
