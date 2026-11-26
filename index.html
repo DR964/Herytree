@@ -160,9 +160,9 @@
         <button onclick="toggleExportMenu()" class="h-8 sm:h-9 px-2 sm:px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1">
           <span>💾</span><span class="hidden md:inline">Exporter</span>
         </button>
-        <div id="export-menu" class="hidden absolute right-0 top-10 w-52 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 text-xs">
-          <button onclick="exportGedcomFile()" class="w-full text-left px-3 py-2 hover:bg-slate-50 font-medium text-slate-700 flex items-center gap-2">📜 Export GEDCOM (.ged)</button>
-          <button onclick="exportJsonFile()" class="w-full text-left px-3 py-2 hover:bg-slate-50 font-medium text-slate-700 flex items-center gap-2">🗂️ Sauvegarde JSON (.json)</button>
+        <div id="export-menu" class="hidden absolute right-0 top-10 w-64 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 text-xs">
+          <button onclick="exportJsonFile()" class="w-full text-left px-3 py-2 hover:bg-orange-50 font-bold text-orange-700 flex items-center gap-2">🗂️ Sauvegarde complète (.json) <span class="ml-auto text-[10px] bg-orange-100 px-1.5 py-0.5 rounded">100%</span></button>
+          <button onclick="exportGedcomFile()" class="w-full text-left px-3 py-2 hover:bg-slate-50 font-medium text-slate-700 flex items-center gap-2">📜 Export GEDCOM enrichi (.ged)</button>
           <div id="reset-demo-divider" class="border-t border-slate-100 my-1"></div>
           <button id="btn-reset-demo" onclick="resetDemoTree()" class="w-full text-left px-3 py-2 hover:bg-rose-50 font-medium text-rose-600 flex items-center gap-2">🔄 Réinitialiser démo</button>
         </div>
@@ -790,6 +790,10 @@ const FULL_USER_GEDCOM = `0 HEAD
 2 DATE 14 JAN 2006
 2 PLAC Bourg-en-Bresse, France
 1 FAMS @F4@
+0 @F5@ FAM
+1 HUSB @I17@
+1 WIFE @I18@
+1 CHIL @I6@
 0 @I17@ INDI
 1 NAME Louis /MARCHAND/
 1 SEX M
@@ -886,10 +890,6 @@ const FULL_USER_GEDCOM = `0 HEAD
 1 HUSB @I15@
 1 WIFE @I16@
 1 CHIL @I5@
-0 @F5@ FAM
-1 HUSB @I17@
-1 WIFE @I18@
-1 CHIL @I6@
 0 @F6@ FAM
 1 HUSB @I8@
 1 WIFE @I7@
@@ -1669,6 +1669,7 @@ function parseGedcom(text) {
   let curObje = null;
   let curTag = '';
   let inlineObje = null;
+  let curLifeEvent = null;
 
   for (const rawLine of lines) {
     const line = rawLine.trim();
@@ -1686,6 +1687,7 @@ function parseGedcom(text) {
       curObje = null;
       curTag = '';
       inlineObje = null;
+      curLifeEvent = null;
       if (tag === 'INDI' && pointer) {
         curIndi = {
           id: pointer,
@@ -1716,7 +1718,7 @@ function parseGedcom(text) {
         };
         families[pointer] = curFam;
       } else if (tag === 'OBJE' && pointer) {
-        curObje = { id: pointer, file: '', title: '', form: '' };
+        curObje = { id: pointer, file: '', title: '', form: '', note: '' };
         mediaObjects[pointer] = curObje;
       }
       continue;
@@ -1726,6 +1728,8 @@ function parseGedcom(text) {
       if (tag === 'FILE') curObje.file = val;
       else if (tag === 'TITL') curObje.title = val;
       else if (tag === 'FORM') curObje.form = val;
+      else if (tag === 'NOTE') curObje.note = val;
+      else if (tag === 'CONC' && curObje.file) curObje.file += val;
       continue;
     }
 
@@ -1733,6 +1737,7 @@ function parseGedcom(text) {
       if (level === 1) {
         curTag = tag;
         inlineObje = null;
+        curLifeEvent = null;
         if (tag === 'NAME') {
           const nm = val.match(/^(.*?)\s*\/([^/]*)\//);
           if (nm) {
@@ -1744,7 +1749,15 @@ function parseGedcom(text) {
         } else if (tag === 'SEX') {
           curIndi.sex = ['M', 'F'].includes(val.toUpperCase()) ? val.toUpperCase() : 'U';
         } else if (tag === 'OCCU') {
-          curIndi.occu = val;
+          if (!curIndi.occu && val) curIndi.occu = val;
+          curLifeEvent = { type: 'job', label: val || 'Profession', date: '', place: '' };
+          curIndi.events.push(curLifeEvent);
+        } else if (tag === 'RESI') {
+          curLifeEvent = { type: 'move', label: val || 'Déménagement / Résidence', date: '', place: '' };
+          curIndi.events.push(curLifeEvent);
+        } else if (tag === 'EVEN') {
+          curLifeEvent = { type: 'event', label: val || 'Étape marquante', date: '', place: '' };
+          curIndi.events.push(curLifeEvent);
         } else if (tag === 'NOTE') {
           curIndi.note = curIndi.note ? `${curIndi.note}\n${val}` : val;
         } else if (tag === 'FAMC') {
@@ -1758,7 +1771,7 @@ function parseGedcom(text) {
           if (val.startsWith('@')) {
             curIndi.mediaRefs.push(val.replace(/@/g, ''));
           } else {
-            inlineObje = { file: '', title: '', form: '' };
+            inlineObje = { file: '', title: '', form: '', note: '' };
             curIndi.mediaRefs.push(inlineObje);
           }
         }
@@ -1770,12 +1783,19 @@ function parseGedcom(text) {
           curIndi.deat.status = true;
           if (tag === 'DATE') curIndi.deat.date = val;
           if (tag === 'PLAC') curIndi.deat.place = val;
+          if (tag === 'CAUS') curIndi.deat.cause = val;
+        } else if ((curTag === 'RESI' || curTag === 'OCCU' || curTag === 'EVEN') && curLifeEvent) {
+          if (tag === 'DATE') curLifeEvent.date = val;
+          if (tag === 'PLAC') curLifeEvent.place = val;
+          if (tag === 'TYPE' && val) curLifeEvent.label = val;
         } else if (curTag === 'NOTE' && (tag === 'CONT' || tag === 'CONC')) {
           curIndi.note += (tag === 'CONT' ? '\n' : '') + val;
         } else if (curTag === 'OBJE' && inlineObje) {
           if (tag === 'FILE') inlineObje.file = val;
+          if (tag === 'CONC' && inlineObje.file) inlineObje.file += val;
           if (tag === 'TITL') inlineObje.title = val;
           if (tag === 'FORM') inlineObje.form = val;
+          if (tag === 'NOTE') inlineObje.note = val;
         }
       }
     } else if (curFam) {
@@ -1808,8 +1828,9 @@ function parseGedcom(text) {
     }
   }
 
-  // Résolution des médias GEDCOM (OBJE) vers les portraits et pièces justificatives
+  // Résolution des médias GEDCOM (OBJE) et nettoyage des événements redondants sans date ni lieu
   Object.values(individuals).forEach(indi => {
+    indi.events = (indi.events || []).filter(ev => !(ev.type === 'job' && ev.label === indi.occu && !ev.date && !ev.place));
     (indi.mediaRefs || []).forEach((ref, idx) => {
       const mObj = typeof ref === 'string' ? mediaObjects[ref] : ref;
       if (!mObj || (!mObj.file && !mObj.title)) return;
@@ -1819,15 +1840,16 @@ function parseGedcom(text) {
       const cleanName = fileStr.split(/[\\/]/).pop() || mObj.title || `Média GEDCOM #${idx + 1}`;
       const meta = parseProofMetadataFromFilename(mObj.title || cleanName);
 
-      if (idx === 0 && isWebOrData && !isVideo && !indi.photo) {
+      if ((idx === 0 || /portrait/i.test(mObj.title || '')) && isWebOrData && !isVideo && !indi.photo) {
         indi.photo = fileStr;
+        if (/portrait/i.test(mObj.title || '')) return;
       }
       indi.documents.push({
         id: 'GED_DOC_' + indi.id + '_' + idx,
         title: mObj.title || meta.title,
         category: isVideo ? 'Vidéo d’archive' : meta.category,
         date: meta.date,
-        note: isWebOrData ? '' : `Fichier référencé dans le GEDCOM : ${fileStr} (cliquez sur « Rattacher le fichier » pour charger l’image ou la vidéo depuis votre appareil).`,
+        note: mObj.note || (isWebOrData ? '' : `Fichier référencé dans le GEDCOM : ${fileStr} (cliquez sur « Rattacher le fichier » pour charger l’image ou la vidéo depuis votre appareil).`),
         mediaType: isVideo ? 'video' : 'image',
         dataUrl: isWebOrData ? fileStr : ''
       });
@@ -1845,6 +1867,16 @@ function parseGedcom(text) {
     individuals,
     families
   };
+}
+
+function pushChunkedGedcomTag(out, level, tag, value) {
+  const str = String(value || '');
+  if (!str) return;
+  const maxChunk = 220;
+  out.push(`${level} ${tag} ${str.slice(0, maxChunk)}`);
+  for (let i = maxChunk; i < str.length; i += maxChunk) {
+    out.push(`${level + 1} CONC ${str.slice(i, i + maxChunk)}`);
+  }
 }
 
 function generateGedcom() {
@@ -1865,12 +1897,50 @@ function generateGedcom() {
       if (p.birt.date) out.push(`2 DATE ${p.birt.date}`);
       if (p.birt.place) out.push(`2 PLAC ${p.birt.place}`);
     }
-    if (p.deat?.status || p.deat?.date || p.deat?.place) {
+    if (p.deat?.status || p.deat?.date || p.deat?.place || p.deat?.cause) {
       out.push('1 DEAT');
       if (p.deat.date) out.push(`2 DATE ${p.deat.date}`);
       if (p.deat.place) out.push(`2 PLAC ${p.deat.place}`);
+      if (p.deat.cause) out.push(`2 CAUS ${p.deat.cause}`);
     }
     if (p.occu) out.push(`1 OCCU ${p.occu}`);
+
+    // Export complet de tous les événements du parcours de vie (déménagements, métiers datés, étapes)
+    (p.events || []).forEach(ev => {
+      if (!ev.label && !ev.date && !ev.place) return;
+      if (ev.type === 'move') {
+        out.push(`1 RESI ${ev.label || 'Déménagement'}`);
+      } else if (ev.type === 'job') {
+        out.push(`1 OCCU ${ev.label || 'Profession'}`);
+      } else {
+        out.push(`1 EVEN ${ev.label || 'Étape marquante'}`);
+      }
+      if (ev.label) out.push(`2 TYPE ${ev.label}`);
+      if (ev.date) out.push(`2 DATE ${ev.date}`);
+      if (ev.place) out.push(`2 PLAC ${ev.place}`);
+    });
+
+    // Export de la photo portrait (OBJE)
+    if (p.photo) {
+      out.push('1 OBJE');
+      pushChunkedGedcomTag(out, 2, 'FILE', p.photo);
+      out.push('2 FORM jpg');
+      out.push('2 TITL Portrait principal');
+    }
+
+    // Export de toutes les pièces justificatives, photos et vidéos (OBJE)
+    (p.documents || []).forEach(docItem => {
+      out.push('1 OBJE');
+      if (docItem.dataUrl) {
+        pushChunkedGedcomTag(out, 2, 'FILE', docItem.dataUrl);
+      }
+      const isVid = docItem.mediaType === 'video' || String(docItem.dataUrl || '').startsWith('data:video/');
+      out.push(`2 FORM ${isVid ? 'mp4' : 'jpg'}`);
+      const fullTitle = [docItem.title, docItem.category, docItem.date].filter(Boolean).join(' - ');
+      if (fullTitle) out.push(`2 TITL ${fullTitle}`);
+      if (docItem.note) out.push(`2 NOTE ${docItem.note.replace(/\n/g, ' ')}`);
+    });
+
     if (p.famc) out.push(`1 FAMC @${p.famc}@`);
     (p.fams || []).forEach(fid => out.push(`1 FAMS @${fid}@`));
     if (p.note) {
@@ -3772,14 +3842,15 @@ function downloadTextFile(filename, content, mime = 'text/plain;charset=utf-8') 
 function exportGedcomFile() {
   document.getElementById('export-menu')?.classList.add('hidden');
   const ged = generateGedcom();
-  downloadTextFile(`heritree_${new Date().toISOString().slice(0, 10)}.ged`, ged);
-  showToast('Fichier GEDCOM (.ged) exporté !');
+  downloadTextFile(`heritree_complet_${new Date().toISOString().slice(0, 10)}.ged`, ged);
+  showToast('GEDCOM enrichi (photos, actes & étapes) exporté !');
 }
 
 function exportJsonFile() {
   document.getElementById('export-menu')?.classList.add('hidden');
-  downloadTextFile(`heritree_backup_${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(treeData, null, 2), 'application/json');
-  showToast('Sauvegarde JSON exportée !');
+  saveTreeToStorage();
+  downloadTextFile(`heritree_complet_${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(treeData, null, 2), 'application/json');
+  showToast('Sauvegarde complète (.json) exportée !');
 }
 
 function handleFileImport(event) {
