@@ -377,63 +377,111 @@
 
   <!-- MODALE PROPOSITION DE MODIFICATIONS (MODE LECTURE SEULE / FAMILLE) -->
   <div id="suggest-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[62] flex items-end sm:items-center justify-center p-0 sm:p-4" onmousedown="modalOverlayDownTarget=event.target" onclick="if(event.target===this && modalOverlayDownTarget===this) closeSuggestModal()">
-    <div class="bg-white w-full max-w-xl max-h-[92dvh] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden text-xs select-text">
+    <div class="bg-white w-full max-w-2xl max-h-[92dvh] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden text-xs select-text">
       <div class="px-5 py-3.5 bg-amber-50 border-b border-amber-200 flex items-center justify-between">
         <div>
-          <h3 class="text-sm sm:text-base font-extrabold text-amber-950">💡 Suggérer des modifications</h3>
+          <h3 class="text-sm sm:text-base font-extrabold text-amber-950">💡 Suggérer des modifications (Mode Supposition)</h3>
           <p id="suggest-target-label" class="text-[11px] text-amber-800 font-medium">Membre concerné</p>
         </div>
         <button onclick="closeSuggestModal()" class="w-8 h-8 rounded-xl bg-white hover:bg-amber-100 text-slate-600 font-bold">✕</button>
       </div>
-      <div class="p-4 sm:p-5 overflow-y-auto custom-scroll space-y-3">
+      <div class="p-4 sm:p-5 overflow-y-auto custom-scroll space-y-4">
         <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200">
           <label class="block text-[10.5px] font-bold text-slate-600 uppercase mb-1">Votre prénom / nom (pour identifier l'auteur)</label>
           <input id="sug-author" type="text" placeholder="Ex: Tante Claire, Cousin Marc..." class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium" />
         </div>
 
-        <p class="text-[11px] text-slate-500">Modifiez les champs ou ajoutez une photo portrait / pièce justificative. Chaque élément sera envoyé pour validation :</p>
+        <p class="text-[11px] text-slate-500">Modifiez n'importe quelle information ou ajoutez un proche, un déménagement, un métier ou une preuve. Rien ne modifie l'arbre directement : chaque point est envoyé en supposition pour validation.</p>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <div>
-            <label class="block text-[10.5px] font-semibold text-slate-500 mb-1">Prénom(s)</label>
-            <input id="sug-given" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200" />
+        <!-- 1. IDENTITÉ & ÉTAT CIVIL -->
+        <div class="space-y-2.5 bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200">
+          <div class="text-[10.5px] font-extrabold uppercase text-slate-600">🪪 Identité &amp; État civil</div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-500 mb-1">Prénom(s)</label>
+              <input id="sug-given" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-500 mb-1">Nom de famille</label>
+              <input id="sug-surname" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-500 mb-1">Sexe</label>
+              <select id="sug-sex" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white">
+                <option value="M">Homme (M)</option>
+                <option value="F">Femme (F)</option>
+                <option value="U">Non précisé</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-500 mb-1">🎂 Date de naissance</label>
+              <input id="sug-birt-date" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-500 mb-1">📍 Lieu de naissance</label>
+              <input id="sug-birt-place" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-500 mb-1">💼 Profession principale</label>
+              <input id="sug-occu" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-500 mb-1">🕊️ Date de décès</label>
+              <input id="sug-deat-date" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-500 mb-1">📍 Lieu de décès</label>
+              <input id="sug-deat-place" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-500 mb-1">Cause du décès</label>
+              <input id="sug-deat-cause" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white" />
+            </div>
           </div>
+
           <div>
-            <label class="block text-[10.5px] font-semibold text-slate-500 mb-1">Nom de famille</label>
-            <input id="sug-surname" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200" />
-          </div>
-          <div>
-            <label class="block text-[10.5px] font-semibold text-slate-500 mb-1">🎂 Date de naissance</label>
-            <input id="sug-birt-date" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200" />
-          </div>
-          <div>
-            <label class="block text-[10.5px] font-semibold text-slate-500 mb-1">📍 Lieu de naissance</label>
-            <input id="sug-birt-place" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200" />
-          </div>
-          <div>
-            <label class="block text-[10.5px] font-semibold text-slate-500 mb-1">🕊️ Date de décès</label>
-            <input id="sug-deat-date" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200" />
-          </div>
-          <div>
-            <label class="block text-[10.5px] font-semibold text-slate-500 mb-1">📍 Lieu de décès</label>
-            <input id="sug-deat-place" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200" />
+            <label class="block text-[10px] font-semibold text-slate-500 mb-1">📝 Note biographique / Anecdote</label>
+            <textarea id="sug-note" rows="2" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white"></textarea>
           </div>
         </div>
 
-        <div>
-          <label class="block text-[10.5px] font-semibold text-slate-500 mb-1">💼 Profession</label>
-          <input id="sug-occu" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200" />
+        <!-- 2. UNIONS & SÉPARATIONS EXISTANTES -->
+        <div id="sug-unions-section" class="hidden space-y-2 bg-orange-50/60 p-3.5 rounded-2xl border border-orange-200">
+          <div class="text-[10.5px] font-extrabold uppercase text-orange-900">💍 Unions &amp; Séparations</div>
+          <div id="sug-unions-list" class="space-y-2"></div>
         </div>
 
-        <div>
-          <label class="block text-[10.5px] font-semibold text-slate-500 mb-1">📝 Note biographique / Anecdote</label>
-          <textarea id="sug-note" rows="3" class="w-full px-3 py-2 rounded-xl border border-slate-200"></textarea>
+        <!-- 3. PROPOSER UN NOUVEL ÉVÉNEMENT DE VIE (DÉMÉNAGEMENT, MÉTIER, ÉTAPE) -->
+        <div class="space-y-2 bg-indigo-50/60 p-3.5 rounded-2xl border border-indigo-200">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-[10.5px] font-extrabold uppercase text-indigo-950">⏳ Proposer un déménagement, un métier ou une étape</span>
+            <div class="flex gap-1">
+              <button type="button" onclick="addSuggestDraftEvent('move')" class="px-2 py-1 rounded-lg bg-white hover:bg-indigo-100 border border-indigo-200 text-indigo-800 font-bold text-[10.5px]">+ Déménagement</button>
+              <button type="button" onclick="addSuggestDraftEvent('job')" class="px-2 py-1 rounded-lg bg-white hover:bg-indigo-100 border border-indigo-200 text-indigo-800 font-bold text-[10.5px]">+ Métier / Étape</button>
+            </div>
+          </div>
+          <div id="sug-events-list" class="space-y-1.5"></div>
         </div>
 
-        <!-- Ajout de photo portrait et pièces justificatives par la famille -->
+        <!-- 4. PROPOSER L'AJOUT D'UN PROCHE (FRÈRE/SŒUR, PARENT, CONJOINT, ENFANT) -->
+        <div class="space-y-2 bg-emerald-50/60 p-3.5 rounded-2xl border border-emerald-200">
+          <div class="flex flex-wrap items-center justify-between gap-1.5">
+            <span class="text-[10.5px] font-extrabold uppercase text-emerald-950">👨‍👩‍👧‍👦 Proposer un proche manquant</span>
+            <div class="flex flex-wrap gap-1">
+              <button type="button" onclick="addSuggestDraftRelative('sibling')" class="px-2 py-1 rounded-lg bg-white hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-[10.5px]">+ Frère/Sœur</button>
+              <button type="button" onclick="addSuggestDraftRelative('child')" class="px-2 py-1 rounded-lg bg-white hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-[10.5px]">+ Enfant</button>
+              <button type="button" onclick="addSuggestDraftRelative('spouse')" class="px-2 py-1 rounded-lg bg-white hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-[10.5px]">+ Conjoint</button>
+              <button type="button" onclick="addSuggestDraftRelative('father')" class="px-2 py-1 rounded-lg bg-white hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-[10.5px]">+ Père</button>
+              <button type="button" onclick="addSuggestDraftRelative('mother')" class="px-2 py-1 rounded-lg bg-white hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-[10.5px]">+ Mère</button>
+            </div>
+          </div>
+          <div id="sug-relatives-list" class="space-y-2"></div>
+        </div>
+
+        <!-- 5. PHOTO PORTRAIT & PIÈCES JUSTIFICATIVES / PHOTOS / VIDÉOS -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-amber-50/70 p-3 rounded-2xl border border-amber-200">
           <div>
-            <label class="block text-[10.5px] font-bold text-amber-900 mb-1">📷 Proposer une photo portrait</label>
+            <label class="block text-[10px] font-bold text-amber-900 mb-1">📷 Proposer une photo portrait</label>
             <label class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-amber-100 border border-amber-300 text-amber-900 font-semibold cursor-pointer">
               <span>Choisir une photo</span>
               <input type="file" accept="image/*" onchange="handleSuggestPortraitUpload(event)" class="hidden" />
@@ -441,23 +489,23 @@
             <div id="sug-portrait-preview" class="mt-1.5 text-[10.5px] text-emerald-700 font-semibold"></div>
           </div>
           <div>
-            <label class="block text-[10.5px] font-bold text-amber-900 mb-1">📜 Ajouter une preuve / acte / photo</label>
+            <label class="block text-[10px] font-bold text-amber-900 mb-1">📜 Ajouter une preuve / acte / photo / vidéo</label>
             <label class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-amber-100 border border-amber-300 text-amber-900 font-semibold cursor-pointer">
               <span>Choisir fichier(s)</span>
-              <input type="file" accept="image/*" multiple onchange="handleSuggestDocsUpload(event)" class="hidden" />
+              <input type="file" accept="image/*,video/*" multiple onchange="handleSuggestDocsUpload(event)" class="hidden" />
             </label>
             <div id="sug-docs-preview" class="mt-1.5 text-[10.5px] text-emerald-700 font-semibold"></div>
           </div>
         </div>
 
         <div>
-          <label class="block text-[10.5px] font-semibold text-slate-500 mb-1">💬 Précision ou source (facultatif)</label>
-          <input id="sug-comment" type="text" placeholder="Ex: Vu sur le livret de famille..." class="w-full px-3 py-2 rounded-xl border border-slate-200" />
+          <label class="block text-[10px] font-semibold text-slate-500 mb-1">💬 Précision ou source (facultatif)</label>
+          <input id="sug-comment" type="text" placeholder="Ex: Vu sur le livret de famille, souvenir familial..." class="w-full px-3 py-2 rounded-xl border border-slate-200" />
         </div>
       </div>
       <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
         <button onclick="closeSuggestModal()" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 font-semibold">Annuler</button>
-        <button onclick="submitModificationSuggestions()" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold shadow-sm">Envoyer la suggestion</button>
+        <button onclick="submitModificationSuggestions()" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold shadow-sm">Envoyer les suppositions</button>
       </div>
     </div>
   </div>
@@ -1330,6 +1378,8 @@ function refreshSuggestionsBadge() {
 let suggestTargetId = null;
 let suggestDraftPortrait = '';
 let suggestDraftDocs = [];
+let suggestDraftEvents = [];
+let suggestDraftRelatives = [];
 
 function openSuggestModal(pid) {
   const targetId = pid || selectedPersonId || fichePersonId;
@@ -1338,25 +1388,148 @@ function openSuggestModal(pid) {
   suggestTargetId = targetId;
   suggestDraftPortrait = '';
   suggestDraftDocs = [];
+  suggestDraftEvents = [];
+  suggestDraftRelatives = [];
+
   document.getElementById('suggest-target-label').textContent = `Fiche de ${fullName(p)}`;
   document.getElementById('sug-given').value = p.given || '';
   document.getElementById('sug-surname').value = p.surname || '';
+  document.getElementById('sug-sex').value = p.sex || 'U';
   document.getElementById('sug-birt-date').value = p.birt?.date || '';
   document.getElementById('sug-birt-place').value = p.birt?.place || '';
   document.getElementById('sug-deat-date').value = p.deat?.date || '';
   document.getElementById('sug-deat-place').value = p.deat?.place || '';
+  document.getElementById('sug-deat-cause').value = p.deat?.cause || '';
   document.getElementById('sug-occu').value = p.occu || '';
   document.getElementById('sug-note').value = p.note || '';
   document.getElementById('sug-comment').value = '';
+
   const pPrev = document.getElementById('sug-portrait-preview');
   const dPrev = document.getElementById('sug-docs-preview');
   if (pPrev) pPrev.innerHTML = '';
   if (dPrev) dPrev.innerHTML = '';
+
+  // Unions existantes à corriger en supposition
+  const spouses = getSpousesOf(targetId);
+  const uSec = document.getElementById('sug-unions-section');
+  const uList = document.getElementById('sug-unions-list');
+  if (uSec && uList) {
+    if (!spouses.length) {
+      uSec.classList.add('hidden');
+      uList.innerHTML = '';
+    } else {
+      uSec.classList.remove('hidden');
+      uList.innerHTML = spouses.map(({ spouseId, famId }) => {
+        const sp = IND()[spouseId];
+        const fam = FAM()[famId];
+        const uType = fam?.unionType || 'marriage';
+        return `
+          <div class="p-2.5 rounded-xl bg-white border border-orange-200/80 space-y-1.5" data-sug-fam="${ea(famId)}">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-bold text-slate-800">Avec ${escapeHtml(fullName(sp))}</span>
+              <select class="sug-u-type px-2 py-1 rounded-lg border border-slate-200 bg-slate-50 text-[10.5px] font-semibold">
+                <option value="marriage" ${uType === 'marriage' ? 'selected' : ''}>💍 Mariage</option>
+                <option value="pacs" ${uType === 'pacs' ? 'selected' : ''}>📜 PACS</option>
+                <option value="together" ${uType === 'together' ? 'selected' : ''}>❤️ Ensemble</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+              <input type="text" placeholder="Date union" value="${ea(fam?.marr?.date || '')}" class="sug-u-mdate px-2 py-1 rounded-lg border border-slate-200" />
+              <input type="text" placeholder="Lieu union" value="${ea(fam?.marr?.place || '')}" class="sug-u-mplace px-2 py-1 rounded-lg border border-slate-200" />
+              <input type="text" placeholder="Date séparation" value="${ea(fam?.div?.date || '')}" class="sug-u-ddate px-2 py-1 rounded-lg border border-slate-200" />
+              <input type="text" placeholder="Lieu séparation" value="${ea(fam?.div?.place || '')}" class="sug-u-dplace px-2 py-1 rounded-lg border border-slate-200" />
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  renderSuggestDraftEvents();
+  renderSuggestDraftRelatives();
+
   try {
-    const savedAuthor = localStorage.getItem('heritree_sug_author');
+    const savedAuthor = localStorage.getItem('heritree_sug_author') || localStorage.getItem(`heritree_visitor_name_${ensureSyncId()}`);
     if (savedAuthor) document.getElementById('sug-author').value = savedAuthor;
   } catch (e) {}
   document.getElementById('suggest-modal')?.classList.remove('hidden');
+}
+
+function addSuggestDraftEvent(type = 'move') {
+  suggestDraftEvents.push({
+    type,
+    label: type === 'job' ? 'Changement de profession' : 'Déménagement',
+    date: '',
+    place: ''
+  });
+  renderSuggestDraftEvents();
+}
+
+function renderSuggestDraftEvents() {
+  const el = document.getElementById('sug-events-list');
+  if (!el) return;
+  if (!suggestDraftEvents.length) {
+    el.innerHTML = `<div class="text-[10.5px] text-indigo-800/70">Cliquez sur « + Déménagement » ou « + Métier / Étape » pour suggérer un événement sur sa frise.</div>`;
+    return;
+  }
+  el.innerHTML = suggestDraftEvents.map((ev, i) => `
+    <div class="flex flex-wrap items-center gap-1.5 bg-white p-2 rounded-xl border border-indigo-200">
+      <input type="text" value="${ea(ev.label)}" placeholder="Intitulé (ex: Installation à Lyon)" oninput="suggestDraftEvents[${i}].label=this.value" class="flex-1 min-w-[130px] px-2 py-1 rounded-lg border border-slate-200 font-semibold" />
+      <input type="text" value="${ea(ev.date)}" placeholder="Date / Année" oninput="suggestDraftEvents[${i}].date=this.value" class="w-24 px-2 py-1 rounded-lg border border-slate-200" />
+      <input type="text" value="${ea(ev.place)}" placeholder="Lieu" oninput="suggestDraftEvents[${i}].place=this.value" class="w-32 px-2 py-1 rounded-lg border border-slate-200" />
+      <button type="button" onclick="suggestDraftEvents.splice(${i},1);renderSuggestDraftEvents()" class="px-2 py-1 rounded-lg bg-rose-100 text-rose-700 font-bold">✕</button>
+    </div>
+  `).join('');
+}
+
+function addSuggestDraftRelative(relation) {
+  const p = IND()[suggestTargetId];
+  const defaultSurname = (relation === 'sibling' || relation === 'child' || relation === 'father') ? (p?.surname || '') : '';
+  const defaultSex = relation === 'father' ? 'M' : (relation === 'mother' ? 'F' : 'U');
+  suggestDraftRelatives.push({
+    relation,
+    given: '',
+    surname: defaultSurname,
+    sex: defaultSex,
+    birthDate: '',
+    birthPlace: ''
+  });
+  renderSuggestDraftRelatives();
+}
+
+function renderSuggestDraftRelatives() {
+  const el = document.getElementById('sug-relatives-list');
+  if (!el) return;
+  const labels = {
+    sibling: 'Frère / Sœur',
+    child: 'Enfant',
+    spouse: 'Conjoint(e)',
+    father: 'Père',
+    mother: 'Mère'
+  };
+  if (!suggestDraftRelatives.length) {
+    el.innerHTML = `<div class="text-[10.5px] text-emerald-800/70">Utilisez les boutons ci-dessus pour proposer l'ajout d'un frère, d'une sœur, d'un enfant, d'un conjoint ou d'un parent.</div>`;
+    return;
+  }
+  el.innerHTML = suggestDraftRelatives.map((rel, i) => `
+    <div class="p-2.5 rounded-xl bg-white border border-emerald-200 space-y-1.5">
+      <div class="flex items-center justify-between">
+        <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-bold text-[10px]">+ ${labels[rel.relation] || 'Proche'}</span>
+        <button type="button" onclick="suggestDraftRelatives.splice(${i},1);renderSuggestDraftRelatives()" class="text-rose-600 font-bold text-[11px]">✕ Retirer</button>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
+        <input type="text" placeholder="Prénom *" value="${ea(rel.given)}" oninput="suggestDraftRelatives[${i}].given=this.value" class="px-2 py-1 rounded-lg border border-slate-200 font-semibold" />
+        <input type="text" placeholder="Nom" value="${ea(rel.surname)}" oninput="suggestDraftRelatives[${i}].surname=this.value" class="px-2 py-1 rounded-lg border border-slate-200" />
+        <select onchange="suggestDraftRelatives[${i}].sex=this.value" class="px-2 py-1 rounded-lg border border-slate-200 bg-slate-50">
+          <option value="U" ${rel.sex === 'U' ? 'selected' : ''}>Sexe ?</option>
+          <option value="M" ${rel.sex === 'M' ? 'selected' : ''}>Homme</option>
+          <option value="F" ${rel.sex === 'F' ? 'selected' : ''}>Femme</option>
+        </select>
+        <input type="text" placeholder="Date naissance" value="${ea(rel.birthDate)}" oninput="suggestDraftRelatives[${i}].birthDate=this.value" class="px-2 py-1 rounded-lg border border-slate-200" />
+        <input type="text" placeholder="Lieu naissance" value="${ea(rel.birthPlace)}" oninput="suggestDraftRelatives[${i}].birthPlace=this.value" class="px-2 py-1 rounded-lg border border-slate-200" />
+      </div>
+    </div>
+  `).join('');
 }
 
 function closeSuggestModal() {
@@ -1397,16 +1570,34 @@ async function handleSuggestDocsUpload(event) {
   if (!files.length) return;
   for (const file of files) {
     const meta = parseProofMetadataFromFilename(file.name);
-    const dataUrl = await compressImageDataUrl(file, 900, 0.78);
-    suggestDraftDocs.push({
-      id: 'DOC_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-      title: meta.title,
-      category: meta.category,
-      date: meta.date,
-      note: '',
-      mediaType: 'image',
-      dataUrl
-    });
+    const isVideo = file.type.startsWith('video/');
+    if (isVideo) {
+      const dataUrl = await new Promise(res => {
+        const r = new FileReader();
+        r.onload = ev => res(ev.target.result);
+        r.readAsDataURL(file);
+      });
+      suggestDraftDocs.push({
+        id: 'DOC_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        title: meta.title,
+        category: 'Vidéo d’archive',
+        date: meta.date,
+        note: '',
+        mediaType: 'video',
+        dataUrl
+      });
+    } else {
+      const dataUrl = await compressImageDataUrl(file, 900, 0.78);
+      suggestDraftDocs.push({
+        id: 'DOC_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        title: meta.title,
+        category: meta.category,
+        date: meta.date,
+        note: '',
+        mediaType: 'image',
+        dataUrl
+      });
+    }
   }
   const dPrev = document.getElementById('sug-docs-preview');
   if (dPrev) {
@@ -1424,15 +1615,88 @@ async function submitModificationSuggestions() {
   const candidates = [
     { field: 'given', label: 'Prénom(s)', oldVal: p.given || '', newVal: document.getElementById('sug-given').value.trim() },
     { field: 'surname', label: 'Nom de famille', oldVal: p.surname || '', newVal: document.getElementById('sug-surname').value.trim() },
+    { field: 'sex', label: 'Sexe', oldVal: p.sex || 'U', newVal: document.getElementById('sug-sex').value },
     { field: 'birt.date', label: 'Date de naissance', oldVal: p.birt?.date || '', newVal: document.getElementById('sug-birt-date').value.trim() },
     { field: 'birt.place', label: 'Lieu de naissance', oldVal: p.birt?.place || '', newVal: document.getElementById('sug-birt-place').value.trim() },
     { field: 'deat.date', label: 'Date de décès', oldVal: p.deat?.date || '', newVal: document.getElementById('sug-deat-date').value.trim() },
     { field: 'deat.place', label: 'Lieu de décès', oldVal: p.deat?.place || '', newVal: document.getElementById('sug-deat-place').value.trim() },
+    { field: 'deat.cause', label: 'Cause du décès', oldVal: p.deat?.cause || '', newVal: document.getElementById('sug-deat-cause').value.trim() },
     { field: 'occu', label: 'Profession', oldVal: p.occu || '', newVal: document.getElementById('sug-occu').value.trim() },
     { field: 'note', label: 'Note biographique', oldVal: p.note || '', newVal: document.getElementById('sug-note').value.trim() }
   ];
 
   const diffs = candidates.filter(c => c.oldVal !== c.newVal);
+
+  // Vérification des modifications sur les unions existantes
+  document.querySelectorAll('#sug-unions-list [data-sug-fam]').forEach(row => {
+    const famId = row.getAttribute('data-sug-fam');
+    const fam = FAM()[famId];
+    if (!fam) return;
+    const spId = fam.husb === p.id ? fam.wife : fam.husb;
+    const spName = fullName(IND()[spId]);
+    const nType = row.querySelector('.sug-u-type')?.value || 'marriage';
+    const nMDate = row.querySelector('.sug-u-mdate')?.value.trim() || '';
+    const nMPlace = row.querySelector('.sug-u-mplace')?.value.trim() || '';
+    const nDDate = row.querySelector('.sug-u-ddate')?.value.trim() || '';
+    const nDPlace = row.querySelector('.sug-u-dplace')?.value.trim() || '';
+
+    if ((fam.unionType || 'marriage') !== nType) {
+      diffs.push({ field: 'union', famId, unionPath: 'unionType', label: `Type d'union (${spName})`, oldVal: fam.unionType || 'marriage', newVal: nType });
+    }
+    if ((fam.marr?.date || '') !== nMDate) {
+      diffs.push({ field: 'union', famId, unionPath: 'marr.date', label: `Date d'union (${spName})`, oldVal: fam.marr?.date || '', newVal: nMDate });
+    }
+    if ((fam.marr?.place || '') !== nMPlace) {
+      diffs.push({ field: 'union', famId, unionPath: 'marr.place', label: `Lieu d'union (${spName})`, oldVal: fam.marr?.place || '', newVal: nMPlace });
+    }
+    if ((fam.div?.date || '') !== nDDate) {
+      diffs.push({ field: 'union', famId, unionPath: 'div.date', label: `Date de séparation (${spName})`, oldVal: fam.div?.date || '', newVal: nDDate });
+    }
+    if ((fam.div?.place || '') !== nDPlace) {
+      diffs.push({ field: 'union', famId, unionPath: 'div.place', label: `Lieu de séparation (${spName})`, oldVal: fam.div?.place || '', newVal: nDPlace });
+    }
+  });
+
+  // Nouveaux événements de vie (déménagement, métier, étape)
+  suggestDraftEvents.forEach(ev => {
+    if (!ev.label.trim() && !ev.date.trim() && !ev.place.trim()) return;
+    const desc = [ev.label.trim(), ev.date.trim(), ev.place.trim()].filter(Boolean).join(' • ');
+    diffs.push({
+      field: 'event',
+      label: ev.type === 'job' ? 'Nouveau métier / étape' : 'Nouveau déménagement',
+      oldVal: '(Nouvel événement sur la frise)',
+      newVal: desc,
+      eventPayload: {
+        type: ev.type,
+        label: ev.label.trim() || (ev.type === 'job' ? 'Profession' : 'Déménagement'),
+        date: ev.date.trim(),
+        place: ev.place.trim()
+      }
+    });
+  });
+
+  // Nouveaux proches proposés (frère, sœur, enfant, conjoint, parent)
+  const relLabels = { sibling: 'Frère / Sœur', child: 'Enfant', spouse: 'Conjoint(e)', father: 'Père', mother: 'Mère' };
+  suggestDraftRelatives.forEach(rel => {
+    if (!rel.given.trim() && !rel.surname.trim()) return;
+    const fullRelName = [rel.given.trim(), rel.surname.trim().toUpperCase()].filter(Boolean).join(' ');
+    const details = [fullRelName, rel.birthDate ? `° ${rel.birthDate.trim()}` : '', rel.birthPlace ? `(${rel.birthPlace.trim()})` : ''].filter(Boolean).join(' ');
+    diffs.push({
+      field: 'relative',
+      label: `Ajout d'un proche : ${relLabels[rel.relation] || 'Membre'}`,
+      oldVal: '(Non présent dans l’arbre)',
+      newVal: details,
+      relativePayload: {
+        relation: rel.relation,
+        given: rel.given.trim() || 'Prénom',
+        surname: rel.surname.trim(),
+        sex: rel.sex || 'U',
+        birthDate: rel.birthDate.trim(),
+        birthPlace: rel.birthPlace.trim()
+      }
+    });
+  });
+
   if (suggestDraftPortrait) {
     diffs.push({
       field: 'photo',
@@ -1454,7 +1718,7 @@ async function submitModificationSuggestions() {
   });
 
   if (!diffs.length) {
-    showToast('Aucune modification ou photo ajoutée par rapport à la fiche actuelle.');
+    showToast('Aucune modification, événement, proche ou photo ajouté.');
     return;
   }
 
@@ -1469,11 +1733,15 @@ async function submitModificationSuggestions() {
       author,
       comment,
       field: d.field,
+      famId: d.famId || '',
+      unionPath: d.unionPath || '',
       label: d.label,
       oldVal: d.oldVal,
       newVal: d.newVal,
       mediaDataUrl: d.mediaDataUrl || '',
       docPayload: d.docPayload || null,
+      eventPayload: d.eventPayload || null,
+      relativePayload: d.relativePayload || null,
       createdAt: Date.now()
     };
     treeData.pendingSuggestions.push(item);
@@ -1484,7 +1752,7 @@ async function submitModificationSuggestions() {
 
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(treeData)); } catch (e) {}
   closeSuggestModal();
-  showToast(`${diffs.length} suggestion(s) envoyée(s) pour validation !`);
+  showToast(`${diffs.length} supposition(s) envoyée(s) pour validation !`);
 }
 
 function openSuggestionsReviewModal() {
@@ -1554,6 +1822,26 @@ async function acceptSuggestion(sugId) {
     } else if (s.field === 'document' && s.docPayload) {
       if (!Array.isArray(p.documents)) p.documents = [];
       p.documents.push(s.docPayload);
+    } else if (s.field === 'event' && s.eventPayload) {
+      if (!Array.isArray(p.events)) p.events = [];
+      p.events.push(s.eventPayload);
+    } else if (s.field === 'union' && s.famId && s.unionPath) {
+      updateUnionField(s.famId, s.unionPath, s.newVal);
+    } else if (s.field === 'relative' && s.relativePayload) {
+      const rp = s.relativePayload;
+      const beforeIds = new Set(Object.keys(IND()));
+      quickAddRelative(p.id, rp.relation);
+      const createdId = Object.keys(IND()).find(id => !beforeIds.has(id));
+      if (createdId && IND()[createdId]) {
+        const np = IND()[createdId];
+        np.given = rp.given || np.given;
+        np.surname = rp.surname || np.surname;
+        if (rp.sex && rp.sex !== 'U') np.sex = rp.sex;
+        if (rp.birthDate) np.birt.date = rp.birthDate;
+        if (rp.birthPlace) np.birt.place = rp.birthPlace;
+        rebuildLinks();
+        renderTree({ force: true });
+      }
     } else if (s.field.includes('.')) {
       const [obj, key] = s.field.split('.');
       if (!p[obj]) p[obj] = {};
@@ -1570,7 +1858,7 @@ async function acceptSuggestion(sugId) {
   saveTreeToStorage();
   renderSuggestionsReviewList();
   refreshSuggestionsBadge();
-  showToast('Modification acceptée et appliquée !');
+  showToast('Supposition acceptée et appliquée !');
 }
 
 async function rejectSuggestion(sugId) {
@@ -2439,8 +2727,8 @@ function renderRadialWheel() {
   }
 
   const maxGen = Math.max(2, Math.min(8, maxAncestorDepth(centerId, 0)));
-  const centerR = 74;
-  const ringStep = maxGen <= 4 ? 92 : (maxGen <= 6 ? 78 : 68);
+  const centerR = 72;
+  const ringStep = maxGen <= 3 ? 132 : (maxGen <= 5 ? 116 : (maxGen <= 7 ? 102 : 90));
   const maxR = centerR + maxGen * ringStep;
   lastLayoutBounds = { minX: -maxR - 30, maxX: maxR + 30, minY: -maxR - 30, maxY: maxR + 30 };
   lastRenderedIds.add(centerId);
@@ -2460,6 +2748,15 @@ function renderRadialWheel() {
     const p3 = polarToCart(rIn, a1);
     const p4 = polarToCart(rIn, a0);
     return `M ${p1.x.toFixed(1)} ${p1.y.toFixed(1)} A ${rOut} ${rOut} 0 ${largeArc} 1 ${p2.x.toFixed(1)} ${p2.y.toFixed(1)} L ${p3.x.toFixed(1)} ${p3.y.toFixed(1)} A ${rIn} ${rIn} 0 ${largeArc} 0 ${p4.x.toFixed(1)} ${p4.y.toFixed(1)} Z`;
+  }
+
+  function fitRadialText(str, maxLengthPx, fontSize) {
+    const clean = String(str || '').trim();
+    if (!clean) return '';
+    const charW = fontSize * 0.56;
+    const maxChars = Math.max(4, Math.floor(maxLengthPx / charW));
+    if (clean.length <= maxChars) return clean;
+    return clean.slice(0, Math.max(3, maxChars - 1)).trim() + '…';
   }
 
   function drawAncestorSector(pid, gen, a0, a1) {
@@ -2483,30 +2780,37 @@ function renderRadialWheel() {
     path.ondblclick = (e) => { e.stopPropagation(); setRadialCenter(pid); };
     svg.appendChild(path);
 
-    // Texte orienté dans le sens radial (entre -90° et +90° pour rester toujours à l'endroit)
+    // Orientation tangentielle (le long de l'arc du secteur, perpendiculaire au rayon), bornée entre -90° et +90°
     const midA = (a0 + a1) / 2;
     const rMid = (rIn + rOut) / 2;
     const pos = polarToCart(rMid, midA);
-    let normA = ((midA % 360) + 360) % 360;
-    let rot = normA;
-    if (rot > 90 && rot < 270) rot += 180;
+
+    // La tangente au cercle en midA a pour angle (midA + 90°) ; on ramène l'angle dans [-90°, +90°] pour une lecture à l'endroit
+    let rot = (((midA + 90) % 360) + 360) % 360;
+    if (rot > 90 && rot < 270) rot -= 180;
+    else if (rot >= 270) rot -= 360;
+
+    // Calcul de l'espace disponible le long de l'arc (longueur) et dans l'épaisseur de l'anneau (hauteur)
+    const arcRad = ((a1 - a0) * Math.PI) / 180;
+    const arcLen = rMid * arcRad;
+    const usableArcLen = Math.max(24, arcLen - 10);
+    const fontSize = Math.max(7, Math.min(gen <= 2 ? 12.5 : (gen <= 4 ? 10.5 : 8.5), (ringStep - 12) * 0.42, usableArcLen * 0.24));
+
+    const firstGiven = (p.given || '').trim().split(/\s+/)[0] || '';
+    const surname = dispSurname(p);
+    const fullLabel = `${firstGiven} ${surname}`.trim();
 
     const text = document.createElementNS(svgNS, 'text');
     text.setAttribute('x', pos.x.toFixed(1));
     text.setAttribute('y', pos.y.toFixed(1));
     text.setAttribute('text-anchor', 'middle');
-    text.setAttribute('dominant-baseline', 'middle');
+    text.setAttribute('dominant-baseline', 'central');
     text.setAttribute('transform', `rotate(${rot.toFixed(1)} ${pos.x.toFixed(1)} ${pos.y.toFixed(1)})`);
     text.setAttribute('fill', '#0f172a');
-    text.setAttribute('font-size', gen <= 2 ? '11' : (gen <= 4 ? '9.5' : '8'));
+    text.setAttribute('font-size', fontSize.toFixed(1));
     text.setAttribute('font-weight', '700');
     text.style.pointerEvents = 'none';
-
-    const arcSpan = a1 - a0;
-    const labelStr = arcSpan < 14
-      ? `${(p.given || '').split(' ')[0]} ${(p.surname || '').slice(0, 6)}`
-      : `${(p.given || '').split(' ')[0]} ${dispSurname(p)}`;
-    text.textContent = labelStr.trim();
+    text.textContent = fitRadialText(fullLabel, usableArcLen, fontSize);
     svg.appendChild(text);
 
     const { father, mother } = getParentsOf(pid);
