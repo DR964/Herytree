@@ -194,12 +194,12 @@
     <!-- MINI-FICHE FLOTTANTE / BOTTOM-SHEET ADAPTATIVE AVEC ÉDITION DIRECTE -->
     <aside id="inspector-panel" class="hidden fixed sm:absolute bottom-14 sm:bottom-auto sm:top-3 left-2 right-2 sm:left-auto sm:right-3 sm:w-80 max-h-[65vh] sm:max-h-[calc(100vh-110px)] overflow-y-auto custom-scroll bg-white/95 backdrop-blur border border-slate-200 rounded-2xl shadow-xl p-3.5 z-30">
       <div class="flex items-start justify-between gap-2">
-        <div class="flex items-center gap-2.5 min-w-0">
-          <div id="insp-avatar" class="w-11 h-11 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden">?</div>
-          <div class="min-w-0">
-            <div id="insp-name" class="font-bold text-slate-900 text-sm truncate">Nom Prénom</div>
-            <div id="insp-rel" class="text-[11px] font-semibold text-orange-600 truncate">Lien avec vous</div>
-            <div id="insp-dates" class="text-[11px] text-slate-500 truncate">Dates</div>
+        <div class="flex items-start gap-2.5 min-w-0 flex-1">
+          <div id="insp-avatar" class="w-11 h-11 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden mt-0.5">?</div>
+          <div class="min-w-0 flex-1">
+            <div id="insp-name" class="font-bold text-slate-900 text-sm leading-snug break-words">Nom Prénom</div>
+            <div id="insp-rel" class="text-[11px] font-semibold text-orange-600 leading-snug whitespace-normal break-words mt-0.5">Lien avec vous</div>
+            <div id="insp-dates" class="text-[11px] text-slate-500 mt-0.5">Dates</div>
           </div>
         </div>
         <div class="flex items-center gap-1 shrink-0">
@@ -353,12 +353,12 @@
   <!-- MODALE FICHE COMPLÈTE (LECTURE & ÉDITION) -->
   <div id="fiche-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onmousedown="modalOverlayDownTarget=event.target" onclick="if(event.target===this && modalOverlayDownTarget===this) closeFullFiche()">
     <div class="bg-white w-full max-w-5xl h-[94dvh] sm:h-auto sm:max-h-[92vh] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden select-text">
-      <div class="px-4 sm:px-6 py-3.5 bg-gradient-to-r from-slate-50 to-orange-50/40 border-b border-slate-200 flex items-center justify-between gap-2 shrink-0">
-        <div class="flex items-center gap-3 min-w-0">
-          <div id="modal-avatar" class="w-12 h-12 rounded-2xl bg-orange-100 text-orange-700 flex items-center justify-center font-extrabold text-base shrink-0 overflow-hidden">?</div>
-          <div class="min-w-0">
-            <h2 id="modal-title" class="text-base sm:text-lg font-extrabold text-slate-900 truncate">Fiche individuelle</h2>
-            <p id="modal-subtitle" class="text-xs font-semibold text-orange-600 truncate">Lien de parenté</p>
+      <div class="px-4 sm:px-6 py-3.5 bg-gradient-to-r from-slate-50 to-orange-50/40 border-b border-slate-200 flex items-start justify-between gap-2 shrink-0">
+        <div class="flex items-start gap-3 min-w-0 flex-1">
+          <div id="modal-avatar" class="w-12 h-12 rounded-2xl bg-orange-100 text-orange-700 flex items-center justify-center font-extrabold text-base shrink-0 overflow-hidden mt-0.5">?</div>
+          <div class="min-w-0 flex-1">
+            <h2 id="modal-title" class="text-base sm:text-lg font-extrabold text-slate-900 leading-snug break-words">Fiche individuelle</h2>
+            <p id="modal-subtitle" class="text-xs font-semibold text-orange-600 leading-snug whitespace-normal break-words mt-0.5">Lien de parenté</p>
           </div>
         </div>
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
@@ -2429,31 +2429,141 @@ function computeRelationshipToRoot(targetId) {
   if (relCache.has(targetId)) return relCache.get(targetId);
 
   const visited = new Set([rootId]);
-  const queue = [{ id: rootId, up: 0, down: 0, viaSpouse: false }];
+  const queue = [{ id: rootId, path: [] }];
+
+  function singleStepFrench(step, sex) {
+    const isF = sex === 'F';
+    if (step === 'P') return isF ? 'mère' : 'père';
+    if (step === 'C') return isF ? 'fille' : 'fils';
+    if (step === 'S') return isF ? 'épouse / conjointe' : 'époux / conjoint';
+    return 'proche';
+  }
+
+  function compressBloodChunk(up, down, sex) {
+    const isF = sex === 'F';
+    if (up === 1 && down === 0) return isF ? 'mère' : 'père';
+    if (up === 2 && down === 0) return isF ? 'grand-mère' : 'grand-père';
+    if (up === 3 && down === 0) return isF ? 'arrière-grand-mère' : 'arrière-grand-père';
+    if (up >= 4 && down === 0) {
+      const prefix = 'arrière-'.repeat(up - 2);
+      return isF ? `${prefix}grand-mère` : `${prefix}grand-père`;
+    }
+    if (up === 0 && down === 1) return isF ? 'fille' : 'fils';
+    if (up === 0 && down === 2) return isF ? 'petite-fille' : 'petit-fils';
+    if (up === 0 && down >= 3) {
+      const prefix = 'arrière-'.repeat(down - 2);
+      return isF ? `${prefix}petite-fille` : `${prefix}petit-fils`;
+    }
+    if (up === 1 && down === 1) return isF ? 'sœur' : 'frère';
+    if (up === 2 && down === 1) return isF ? 'tante' : 'oncle';
+    if (up === 3 && down === 1) return isF ? 'grand-tante' : 'grand-oncle';
+    if (up >= 4 && down === 1) {
+      const prefix = 'arrière-'.repeat(up - 3);
+      return isF ? `${prefix}grand-tante` : `${prefix}grand-oncle`;
+    }
+    if (up === 1 && down === 2) return isF ? 'nièce' : 'neveu';
+    if (up === 1 && down === 3) return isF ? 'petite-nièce' : 'petit-neveu';
+    if (up === 1 && down >= 4) {
+      const prefix = 'arrière-'.repeat(down - 3);
+      return isF ? `${prefix}petite-nièce` : `${prefix}petit-neveu`;
+    }
+    if (up === 2 && down === 2) return isF ? 'cousine germaine' : 'cousin germain';
+    if (up === 3 && down === 3) return isF ? 'cousine issue de germains' : 'cousin issu de germains';
+    if (up === down && up >= 4) {
+      return isF ? `cousine au ${up - 1}e degré` : `cousin au ${up - 1}e degré`;
+    }
+    if (up > down && down >= 2) {
+      const rem = up - down;
+      const base = down === 2 ? (isF ? 'cousine germaine' : 'cousin germain') : (isF ? `cousine au ${down - 1}e degré` : `cousin au ${down - 1}e degré`);
+      const anc = rem === 1 ? 'du parent' : (rem === 2 ? 'du grand-parent' : `de l’arrière-grand-parent`);
+      return `${base} ${anc}`;
+    }
+    if (down > up && up >= 2) {
+      const rem = down - up;
+      const baseCousin = up === 2 ? 'cousin germain' : `cousin au ${up - 1}e degré`;
+      const desc = rem === 1 ? (isF ? 'fille du' : 'fils du') : (isF ? 'petite-fille du' : 'petit-fils du');
+      return `${desc} ${baseCousin}`;
+    }
+    return null;
+  }
+
+  function describeExactPath(path) {
+    if (!path.length) return 'Vous';
+
+    // Découpe le chemin en segments consanguins (P* C*) séparés par des alliances (S)
+    const segments = [];
+    let i = 0;
+    while (i < path.length) {
+      const cur = path[i];
+      if (cur.type === 'S') {
+        segments.push({ kind: 'S', toId: cur.toId });
+        i++;
+      } else {
+        let up = 0;
+        let down = 0;
+        while (i < path.length && path[i].type === 'P') { up++; i++; }
+        while (i < path.length && path[i].type === 'C') { down++; i++; }
+        const lastStep = path[i - 1];
+        segments.push({ kind: 'B', up, down, toId: lastStep.toId });
+      }
+    }
+
+    // Cas directs optimisés en français courant
+    if (segments.length === 1 && segments[0].kind === 'B') {
+      const direct = compressBloodChunk(segments[0].up, segments[0].down, IND()[targetId]?.sex);
+      if (direct) return direct.charAt(0).toUpperCase() + direct.slice(1);
+    }
+    if (segments.length === 1 && segments[0].kind === 'S') {
+      return IND()[targetId]?.sex === 'F' ? 'Conjointe / Épouse' : 'Conjoint / Époux';
+    }
+    if (segments.length === 2 && segments[0].kind === 'S' && segments[1].kind === 'B') {
+      const isF = IND()[targetId]?.sex === 'F';
+      if (segments[1].up === 1 && segments[1].down === 0) return isF ? 'Belle-mère' : 'Beau-père';
+      if (segments[1].up === 1 && segments[1].down === 1) return isF ? 'Belle-sœur' : 'Beau-frère';
+    }
+    if (segments.length === 2 && segments[0].kind === 'B' && segments[1].kind === 'S') {
+      const isF = IND()[targetId]?.sex === 'F';
+      if (segments[0].up === 0 && segments[0].down === 1) return isF ? 'Belle-fille' : 'Gendre';
+      if (segments[0].up === 1 && segments[0].down === 1) return isF ? 'Belle-sœur' : 'Beau-frère';
+    }
+
+    // Construction d'une chaîne précise de proche en proche (ex: "Père de l'oncle du père du cousin germain")
+    const parts = [];
+    for (let s = 0; s < segments.length; s++) {
+      const seg = segments[s];
+      const person = IND()[seg.toId];
+      const sex = person?.sex || 'U';
+      if (seg.kind === 'S') {
+        parts.push(sex === 'F' ? 'conjointe' : (sex === 'M' ? 'conjoint' : 'conjoint(e)'));
+      } else {
+        const chunkLabel = compressBloodChunk(seg.up, seg.down, sex);
+        if (chunkLabel) {
+          parts.push(chunkLabel);
+        } else {
+          // Décomposition pas à pas si un segment complexe comporte plusieurs changements
+          for (let u = 0; u < seg.up; u++) parts.push('parent');
+          for (let d = 0; d < seg.down; d++) parts.push(d === seg.down - 1 ? singleStepFrench('C', sex) : 'enfant');
+        }
+      }
+    }
+
+    // Assemblage du plus éloigné vers "vous" (ex: [père, oncle, cousin] -> "Cousin de l'oncle du père")
+    let phrase = parts[parts.length - 1];
+    for (let k = parts.length - 2; k >= 0; k--) {
+      const prev = parts[k];
+      const startsWithVowel = /^[aeiouyàâäéèêëîïôöùûüœh]/i.test(prev);
+      const isFem = /^(mère|grand-mère|arrière-grand-mère|fille|petite-fille|sœur|tante|grand-tante|nièce|cousine|conjointe|belle-)/i.test(prev);
+      const article = startsWithVowel ? 'de l’' : (isFem ? 'de la ' : 'du ');
+      phrase += ` ${article}${prev}`;
+    }
+
+    return phrase.charAt(0).toUpperCase() + phrase.slice(1);
+  }
 
   while (queue.length) {
     const cur = queue.shift();
     if (cur.id === targetId) {
-      let label = 'Membre de la famille';
-      if (!cur.viaSpouse) {
-        if (cur.up === 0 && cur.down === 0) label = 'Vous';
-        else if (cur.up === 1 && cur.down === 0) label = IND()[targetId].sex === 'F' ? 'Mère' : 'Père';
-        else if (cur.up === 2 && cur.down === 0) label = IND()[targetId].sex === 'F' ? 'Grand-mère' : 'Grand-père';
-        else if (cur.up === 3 && cur.down === 0) label = IND()[targetId].sex === 'F' ? 'Arrière-grand-mère' : 'Arrière-grand-père';
-        else if (cur.up > 3 && cur.down === 0) label = `Ancêtre (${cur.up}e gén.)`;
-        else if (cur.up === 0 && cur.down === 1) label = IND()[targetId].sex === 'F' ? 'Fille' : 'Fils';
-        else if (cur.up === 0 && cur.down === 2) label = IND()[targetId].sex === 'F' ? 'Petite-fille' : 'Petit-fils';
-        else if (cur.up === 0 && cur.down >= 3) label = `Descendant (${cur.down}e gén.)`;
-        else if (cur.up === 1 && cur.down === 1) label = IND()[targetId].sex === 'F' ? 'Sœur' : 'Frère';
-        else if (cur.up === 2 && cur.down === 1) label = IND()[targetId].sex === 'F' ? 'Tante' : 'Oncle';
-        else if (cur.up === 1 && cur.down === 2) label = IND()[targetId].sex === 'F' ? 'Nièce' : 'Neveu';
-        else if (cur.up === 2 && cur.down === 2) label = IND()[targetId].sex === 'F' ? 'Cousine germaine' : 'Cousin germain';
-      } else {
-        if (cur.up === 0 && cur.down === 0) label = 'Conjoint(e)';
-        else if (cur.up === 1 && cur.down === 0) label = IND()[targetId].sex === 'F' ? 'Belle-mère' : 'Beau-père';
-        else if (cur.up === 0 && cur.down === 1) label = IND()[targetId].sex === 'F' ? 'Belle-fille' : 'Gendre';
-        else label = 'Famille par alliance';
-      }
+      const label = describeExactPath(cur.path);
       relCache.set(targetId, label);
       return label;
     }
@@ -2464,7 +2574,7 @@ function computeRelationshipToRoot(targetId) {
     [father, mother].forEach(pid => {
       if (pid && !visited.has(pid)) {
         visited.add(pid);
-        queue.push({ id: pid, up: cur.up + 1, down: cur.down, viaSpouse: cur.viaSpouse });
+        queue.push({ id: pid, path: [...cur.path, { type: 'P', toId: pid }] });
       }
     });
     (p.fams || []).forEach(fid => {
@@ -2473,19 +2583,19 @@ function computeRelationshipToRoot(targetId) {
       const sp = f.husb === cur.id ? f.wife : f.husb;
       if (sp && !visited.has(sp)) {
         visited.add(sp);
-        queue.push({ id: sp, up: cur.up, down: cur.down, viaSpouse: true });
+        queue.push({ id: sp, path: [...cur.path, { type: 'S', toId: sp }] });
       }
       (f.children || []).forEach(cid => {
         if (cid && !visited.has(cid)) {
           visited.add(cid);
-          queue.push({ id: cid, up: cur.up, down: cur.down + 1, viaSpouse: cur.viaSpouse });
+          queue.push({ id: cid, path: [...cur.path, { type: 'C', toId: cid }] });
         }
       });
     });
   }
 
-  relCache.set(targetId, 'Branche rattachée');
-  return 'Branche rattachée';
+  relCache.set(targetId, 'Branche non reliée');
+  return 'Branche non reliée';
 }
 
 function nextIndiId() {
@@ -4276,15 +4386,16 @@ function handleQuickSearch(queryStr) {
 
   const html = !matches.length
     ? `<div class="px-3 py-2.5 text-xs text-slate-400">Aucun résultat pour « ${escapeHtml(queryStr)} »</div>`
-    : matches.map(p => `
-      <button type="button" onclick="selectSearchResult('${ea(p.id)}')" class="w-full text-left px-3 py-2 hover:bg-orange-50 flex items-center justify-between gap-2 text-xs">
-        <div class="min-w-0">
-          <div class="font-bold text-slate-900 truncate">${escapeHtml(fullName(p))}</div>
-          <div class="text-[10.5px] text-slate-500 truncate">${escapeHtml(formatLifeDatesShort(p) || p.birt?.place || '')}</div>
-        </div>
-        <span class="text-[10px] font-semibold text-orange-600 shrink-0">${escapeHtml(computeRelationshipToRoot(p.id))}</span>
+    : matches.map(p => {
+      const datesOrPlace = formatLifeDatesShort(p) || p.birt?.place || '';
+      return `
+      <button type="button" onclick="selectSearchResult('${ea(p.id)}')" class="w-full text-left px-3 py-2.5 hover:bg-orange-50 flex flex-col gap-0.5 text-xs">
+        <div class="font-bold text-slate-900 leading-snug break-words">${escapeHtml(fullName(p))}</div>
+        <div class="text-[11px] font-semibold text-orange-600 leading-snug whitespace-normal break-words">${escapeHtml(computeRelationshipToRoot(p.id))}</div>
+        ${datesOrPlace ? `<div class="text-[10.5px] text-slate-500">${escapeHtml(datesOrPlace)}</div>` : ''}
       </button>
-    `).join('');
+    `;
+    }).join('');
 
   boxes.forEach(b => {
     b.innerHTML = html;
