@@ -1221,8 +1221,26 @@ function scheduleSaveTree() {
   const ind = document.getElementById('save-indicator');
   if (ind) ind.textContent = '⏳ Sauvegarde...';
   clearTimeout(saveDebounceTimer);
-  saveDebounceTimer = setTimeout(() => saveTreeToStorage(), 450);
+  saveDebounceTimer = setTimeout(() => {
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+      // Attend que l'utilisateur quitte le champ (blur) ou fasse une pause plus longue
+      scheduleSaveTree();
+      return;
+    }
+    saveTreeToStorage();
+  }, 1200);
 }
+
+// Sauvegarde immédiate dès qu'on quitte un champ texte (perte de focus)
+document.addEventListener('focusout', (e) => {
+  if (isReadOnlyMode || isApplyingRemote) return;
+  const tag = e.target?.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+    clearTimeout(saveDebounceTimer);
+    saveTreeToStorage();
+  }
+});
 
 function loadTreeFromStorage() {
   ensureSyncId();
@@ -1256,6 +1274,10 @@ async function initCloudSync() {
 
   window.HeriTreeCloud.subscribeTree(key, (remote) => {
     if (!remote || !remote.payload) return;
+    // Ignore les échos de nos propres sauvegardes récentes ou si un champ est en cours d'édition
+    const active = document.activeElement;
+    const isTyping = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT');
+    if (isTyping || (Date.now() - (window._lastLocalPushAt || 0) < 3500)) return;
     try {
       const parsed = JSON.parse(remote.payload);
       if (!parsed || !parsed.individuals) return;
@@ -1286,6 +1308,7 @@ async function initCloudSync() {
 async function pushTreeToCloud() {
   if (isReadOnlyMode || !window.HeriTreeCloud?.enabled) return;
   const key = ensureSyncId();
+  window._lastLocalPushAt = Date.now();
   try {
     await window.HeriTreeCloud.pushTree(key, {
       payload: JSON.stringify(treeData),
@@ -2922,6 +2945,8 @@ function renderOrganicGraph(opts = {}) {
     let hubY = h ? h.y : w.y;
 
     if (h && w) {
+      const fam = FAM()[l.id];
+      const isSeparated = Boolean(fam && ((fam.div?.date && fam.div.date.trim()) || (fam.div?.place && fam.div.place.trim())));
       hubX = (h.x + w.x) / 2;
       hubY = (h.y + w.y) / 2;
       const line = document.createElementNS(svgNS, 'line');
@@ -2929,15 +2954,18 @@ function renderOrganicGraph(opts = {}) {
       line.setAttribute('y1', h.y);
       line.setAttribute('x2', w.x);
       line.setAttribute('y2', w.y);
-      line.setAttribute('stroke', '#f97316');
+      line.setAttribute('stroke', isSeparated ? '#e11d48' : '#f97316');
       line.setAttribute('stroke-width', '2.5');
+      if (isSeparated) {
+        line.setAttribute('stroke-dasharray', '6 5');
+      }
       svg.appendChild(line);
 
       const dot = document.createElementNS(svgNS, 'circle');
       dot.setAttribute('cx', hubX);
       dot.setAttribute('cy', hubY);
       dot.setAttribute('r', '4');
-      dot.setAttribute('fill', '#ea580c');
+      dot.setAttribute('fill', isSeparated ? '#e11d48' : '#ea580c');
       svg.appendChild(dot);
     }
 
@@ -3428,6 +3456,9 @@ function updateUnionField(famId, path, val) {
     const [obj, key] = path.split('.');
     if (!fam[obj]) fam[obj] = { date: '', place: '' };
     fam[obj][key] = val;
+    if (obj === 'div') {
+      renderTree();
+    }
   }
   scheduleSaveTree();
 }
